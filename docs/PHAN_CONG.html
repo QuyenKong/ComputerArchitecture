@@ -1,0 +1,542 @@
+<title>Phân công nhóm RV32I</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* layout: left sticky table-of-contents rail + single reading column; collapses to one column on phones */
+:root{
+  --bg:#f7f8f7; --surface:#ffffff; --fg:#1b2423; --muted:#5b6866; --line:#d9dfdd;
+  --accent:#0d6a6f; --accent-soft:#e1efef; --note:#fff6e0; --note-line:#d9a400; --code:#eef2f1;
+  --f-body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121817; --surface:#18201f; --fg:#e3eae8; --muted:#97a6a3; --line:#2c3836;
+  --accent:#5cc3c7; --accent-soft:#1d3536; --note:#2b2615; --note-line:#c99a1c; --code:#1d2726; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121817; --surface:#18201f; --fg:#e3eae8; --muted:#97a6a3; --line:#2c3836;
+  --accent:#5cc3c7; --accent-soft:#1d3536; --note:#2b2615; --note-line:#c99a1c; --code:#1d2726; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.65}
+.wrap{display:grid;grid-template-columns:270px minmax(0,1fr);gap:48px;max-width:1240px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 80px}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;max-height:calc(100vh - 32px);overflow:auto;font-size:13.5px;line-height:1.45;border-right:1px solid var(--line);padding-right:16px}
+nav.toc .brand{font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+nav.toc ul{list-style:none;margin:0;padding:0}
+nav.toc ul ul{padding-left:12px;margin:2px 0 6px}
+nav.toc a{color:var(--muted);text-decoration:none;display:block;padding:3px 0}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--accent)}
+nav.toc > ul > li > a{color:var(--fg);font-weight:600;margin-top:6px}
+main{min-width:0;max-width:820px}
+header.hero{border-bottom:2px solid var(--fg);padding-bottom:20px;margin-bottom:28px}
+header.hero .eyebrow{font-family:var(--f-mono);font-size:12.5px;color:var(--accent);letter-spacing:.06em}
+header.hero h1{font-size:clamp(28px,4vw,40px);line-height:1.15;margin:8px 0 6px;text-wrap:balance}
+header.hero p{color:var(--muted);margin:0}
+h1{font-size:28px;line-height:1.2;margin:56px 0 12px;text-wrap:balance;padding-top:8px;border-top:1px solid var(--line)}
+h2{font-size:21px;line-height:1.3;margin:40px 0 10px;text-wrap:balance}
+h3{font-size:17px;margin:28px 0 8px}
+p,li{max-width:70ch}
+a{color:var(--accent)}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--code);padding:1px 5px;border-radius:4px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;font-size:13px;line-height:1.5}
+pre code{background:none;padding:0;font-size:inherit}
+.tbl{overflow-x:auto;margin:14px 0}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border-bottom:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top;font-variant-numeric:tabular-nums}
+th{background:var(--accent-soft);font-weight:600}
+blockquote{margin:18px 0;padding:12px 16px;background:var(--note);border-left:4px solid var(--note-line);border-radius:0 8px 8px 0}
+blockquote p{margin:0}
+figure{margin:18px 0}
+figure img,p > img{display:block;max-width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:#fff}
+figure a{display:block}
+figcaption{font-size:12.5px;color:var(--muted);margin-top:6px;font-family:var(--f-mono)}
+hr{border:0;border-top:1px solid var(--line);margin:32px 0}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr);gap:20px}
+  nav.toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:0 0 16px}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+html{scroll-behavior:smooth}
+</style>
+<div class="wrap">
+<nav class="toc" aria-label="Mục lục"><div class="brand">RV32I · Logisim</div>
+<ul>
+<li><a href="#vai-trò" id="toc-vai-trò">1. Vai trò</a></li>
+<li><a href="#bùi-phạm-sơn-hà-fetch-decode-control-hazard"
+id="toc-bùi-phạm-sơn-hà-fetch-decode-control-hazard">2. Bùi Phạm Sơn Hà
+— Fetch, Decode, Control hazard</a>
+<ul>
+<li><a href="#đầu-việc-và-tiêu-chí-hoàn-thành"
+id="toc-đầu-việc-và-tiêu-chí-hoàn-thành">2.1 Đầu việc và tiêu chí hoàn
+thành</a></li>
+<li><a href="#cần-truyền-đạt-lại-cho-đức-anh-và-công"
+id="toc-cần-truyền-đạt-lại-cho-đức-anh-và-công">2.2 Cần truyền đạt lại
+cho Đức Anh và Công</a></li>
+</ul></li>
+<li><a href="#nguyễn-đức-anh-execute-data-hazard"
+id="toc-nguyễn-đức-anh-execute-data-hazard">3. Nguyễn Đức Anh — Execute,
+Data hazard</a>
+<ul>
+<li><a href="#đầu-việc-và-tiêu-chí-hoàn-thành-1"
+id="toc-đầu-việc-và-tiêu-chí-hoàn-thành-1">3.1 Đầu việc và tiêu chí hoàn
+thành</a></li>
+<li><a href="#cần-truyền-đạt-lại-cho-hà-và-công"
+id="toc-cần-truyền-đạt-lại-cho-hà-và-công">3.2 Cần truyền đạt lại cho Hà
+và Công</a></li>
+</ul></li>
+<li><a href="#quyền-đức-công-memory-pipeline-kiểm-thử-tích-hợp"
+id="toc-quyền-đức-công-memory-pipeline-kiểm-thử-tích-hợp">4. Quyền Đức
+Công — Memory, Pipeline, Kiểm thử, Tích hợp</a>
+<ul>
+<li><a href="#đầu-việc-và-tiêu-chí-hoàn-thành-2"
+id="toc-đầu-việc-và-tiêu-chí-hoàn-thành-2">4.1 Đầu việc và tiêu chí hoàn
+thành</a></li>
+<li><a href="#cần-truyền-đạt-lại-cho-hà-và-đức-anh"
+id="toc-cần-truyền-đạt-lại-cho-hà-và-đức-anh">4.2 Cần truyền đạt lại cho
+Hà và Đức Anh</a></li>
+</ul></li>
+<li><a href="#mốc-của-cả-nhóm" id="toc-mốc-của-cả-nhóm">5. Mốc của cả
+nhóm</a></li>
+<li><a href="#luật-kỹ-thuật" id="toc-luật-kỹ-thuật">6. Luật kỹ
+thuật</a></li>
+</ul>
+</nav>
+<main>
+<header class="hero"><div class="eyebrow">Bài tập lớn · Kiến trúc máy tính tiên tiến · RISC-V 32-bit</div>
+<h1 style="border:0;margin-top:0;padding:0">Phân công nhóm — CPU RISC-V
+RV32I</h1>
+<p>Bùi Phạm Sơn Hà · Nguyễn Đức Anh · Quyền Đức Công — hạn nộp CN
+8/11</p></header>
+<h1 id="vai-trò">1. Vai trò</h1>
+<p>Cả nhóm dùng <strong>bản tham chiếu làm khung chạy được ngay từ
+đầu</strong>. Mỗi người tự dựng lại các module cốt lõi trong mảng của
+mình, thay khối đó vào khung và chạy test để chứng minh mạch đúng. Các
+module lặp lại hoặc ít giá trị học (4 thanh ghi pipeline, bộ đếm, khối
+I/O) thì giữ bản tham chiếu, chỉ cần giải thích được. Mỗi mảng gồm
+<strong>cả phần đơn chu kỳ lẫn phần pipeline</strong>, để khi bảo vệ
+không ai bị hổng nguyên một nửa.</p>
+<div class="tbl"><table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Bùi Phạm Sơn Hà</strong></th>
+<th><strong>Nguyễn Đức Anh</strong></th>
+<th><strong>Quyền Đức Công</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Mảng</strong></td>
+<td>Fetch, Decode, Control hazard</td>
+<td>Execute, Data hazard</td>
+<td>Memory, Pipeline, Kiểm thử · ghép mạch và biên tập báo cáo</td>
+</tr>
+<tr class="even">
+<td><strong>Tự dựng lại</strong></td>
+<td><code>ImmGen</code>, <code>Control</code>,
+<code>HazardUnit</code></td>
+<td><code>ALU</code>, <code>RegisterFile</code>,
+<code>ForwardUnit</code></td>
+<td><code>AddrDecode</code>, <code>LoadUnit</code>,
+<code>StoreUnit</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Dựng thêm nếu còn thời gian</strong></td>
+<td><code>ALUControl</code></td>
+<td><code>BranchUnit</code></td>
+<td><code>IF_ID</code></td>
+</tr>
+<tr class="even">
+<td><strong>Dùng bản tham chiếu, phải giải thích được</strong></td>
+<td>PC, next-PC, IMEM</td>
+<td>MUX ASel/BSel, <code>IDBypass</code></td>
+<td>4 thanh ghi pipeline, RAM, <code>IOController</code> (UART + GPIO),
+PerfCounters</td>
+</tr>
+</tbody>
+</table></div>
+<p>Hà và Đức Anh có thể đổi vai cho nhau. Ai vững logic số hơn (cổng,
+MUX, số bù 2) thì nhận mảng <strong>Execute</strong>.</p>
+<h1 id="bùi-phạm-sơn-hà-fetch-decode-control-hazard">2. Bùi Phạm Sơn Hà
+— Fetch, Decode, Control hazard</h1>
+<h2 id="đầu-việc-và-tiêu-chí-hoàn-thành">2.1 Đầu việc và tiêu chí hoàn
+thành</h2>
+<div class="tbl"><table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Đầu việc</th>
+<th>Việc cần làm</th>
+<th>Coi là hoàn thành khi</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Nắm ISA</strong></td>
+<td>Đọc phần 1–2 và phase 3–4 của <code>LO_TRINH</code>. Học 6 định dạng
+lệnh và bảng opcode</td>
+<td>Giải mã tay được một lệnh bất kỳ (ví dụ <code>0xFCB50CE3</code>) mà
+không nhìn tài liệu</td>
+</tr>
+<tr class="even">
+<td><strong>ImmGen</strong></td>
+<td>Dựng lại trong file riêng <code>HA.circ</code>, đúng tên chân
+<code>Instr</code>, <code>ImmSel</code> → <code>Imm</code></td>
+<td><code>ImmGen.txt</code> pass 300/300</td>
+</tr>
+<tr class="odd">
+<td><strong>Control</strong></td>
+<td>Dựng lại theo kiểu decoder 5→32 + cổng OR. Tự điền bảng tín hiệu
+điều khiển 10 nhóm lệnh trước khi vẽ</td>
+<td><code>Control.txt</code> pass 400/400 · CPU đơn chu kỳ dùng khối này
+chạy <code>run_tests.py</code> 12/12</td>
+</tr>
+<tr class="even">
+<td><strong>HazardUnit</strong></td>
+<td>Dựng lại: phát hiện load-use, tạo PCWrite, IFID_Write, IFID_Flush,
+IDEX_Flush. Vẽ tay sơ đồ thời gian một lần load-use và một lần BEQ
+nhảy</td>
+<td><code>HazardUnit.txt</code> pass · sơ đồ vẽ tay khớp với Pipeline
+Monitor khi chạy <code>t06_hazard.s</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Fetch / next-PC</strong></td>
+<td>Không cần vẽ lại. Đọc hiểu PC, PC+4,
+<code>target = ALU &amp; ~1</code>, MUX next-PC trong bản tham
+chiếu</td>
+<td>Giải thích được vì sao cần <code>&amp; ~1</code> và khi nào PC nhận
+target</td>
+</tr>
+<tr class="even">
+<td><strong>Báo cáo</strong></td>
+<td>Viết: ISA và tập lệnh, Control Unit, ImmGen, control hazard +
+load-use (4–5 trang) + cheat sheet 1 trang</td>
+<td>Công nhận bài, không phải sửa nội dung kỹ thuật</td>
+</tr>
+<tr class="odd">
+<td><strong>Demo</strong></td>
+<td>Quay phần giải mã lệnh, flush khi nhảy, stall khi load-use</td>
+<td>Có đoạn video 1,5–2 phút</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="cần-truyền-đạt-lại-cho-đức-anh-và-công">2.2 Cần truyền đạt lại
+cho Đức Anh và Công</h2>
+<p><strong>Ý chính phải truyền đạt</strong></p>
+<ol type="1">
+<li>Mọi lệnh dài 32 bit. opcode, rd, funct3, rs1, rs2 luôn nằm ở
+<strong>vị trí cố định</strong>, nhờ vậy phần cứng đọc thanh ghi song
+song với giải mã.</li>
+<li>Vì sao bit immediate của B/J bị “xáo trộn”: để bit dấu luôn là bit
+31 và các mảnh nằm cùng chỗ giữa các định dạng, nên ImmGen chỉ là nối
+dây + MUX.</li>
+<li>Control = <strong>bảng chân lý vẽ thành mạch</strong>: decoder biến
+opcode thành một đường cho mỗi nhóm lệnh, mỗi tín hiệu là OR của các
+nhóm cần nó. Lệnh <code>0x00000000</code> là NOP an toàn vì decoder chỉ
+bật khi <code>opcode[1:0] = 11</code>.</li>
+<li>Bẫy ADDI và bit 30: chỉ SRAI mới dùng bit 30 làm “alt”.</li>
+<li><strong>Control hazard</strong>: đoán “không nhảy”, quyết định ở EX,
+nhảy thì xóa 2 lệnh đã nạp sai, mất 2 chu kỳ.</li>
+<li><strong>Load-use</strong>: forwarding không cứu được, phải chờ 1 chu
+kỳ. Khi đó PC giữ, IF/ID giữ, ID/EX nạp bubble. Redirect được ưu tiên
+hơn Stall.</li>
+</ol>
+<p><strong>Demo phải cho người nghe xem</strong> - Chạy
+<code>RV32I_SingleCycle.circ</code> từng nửa chu kỳ (Ctrl+T) với lệnh
+<code>addi a0, x0, 5</code>, chỉ từng tín hiệu ra của Control. - Chạy
+<code>RV32I_Pipeline.circ</code> tới một lần BEQ nhảy:
+<code>E_Redirect = 1</code>, hai lệnh phía sau thành
+<code>00000000</code>. - Chạy tới một lần load-use:
+<code>Stall = 1</code>, lệnh phụ thuộc đứng yên ở ID một chu kỳ.</p>
+<p><strong>Sau buổi, người nghe phải tự làm được</strong> - Giải mã tay
+<code>0x00500513</code> ra <code>addi a0, x0, 5</code>. - Nói đúng
+RegWrite, MemWrite, BSel, ImmSel của lệnh <code>sw</code>. - Vẽ sơ đồ
+thời gian <code>lw</code> rồi <code>add</code> phụ thuộc, chỉ ra chu kỳ
+bị stall.</p>
+<h1 id="nguyễn-đức-anh-execute-data-hazard">3. Nguyễn Đức Anh — Execute,
+Data hazard</h1>
+<h2 id="đầu-việc-và-tiêu-chí-hoàn-thành-1">3.1 Đầu việc và tiêu chí hoàn
+thành</h2>
+<div class="tbl"><table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Đầu việc</th>
+<th>Việc cần làm</th>
+<th>Coi là hoàn thành khi</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Nắm nền số học</strong></td>
+<td>Đọc phần 1 và phase 1–2 của <code>LO_TRINH</code>: nhị phân, hex, bù
+2, có dấu và không dấu, tổ hợp và tuần tự, cạnh lên clock</td>
+<td>Tự giải thích được SLT khác SLTU, SRA khác SRL bằng ví dụ số cụ
+thể</td>
+</tr>
+<tr class="even">
+<td><strong>ALU</strong></td>
+<td>Dựng lại trong file riêng <code>DUCANH.circ</code>: tính song song
+10 phép rồi dùng MUX chọn theo
+<code>ALUCtrl = {bit30, funct3}</code></td>
+<td><code>ALU.txt</code> pass 250/250</td>
+</tr>
+<tr class="odd">
+<td><strong>RegisterFile</strong></td>
+<td>Dựng lại: 31 thanh ghi, decoder ghi, 2 MUX đọc, x0 là hằng 0</td>
+<td><code>RegisterFile.txt</code> pass 400/400 · CPU đơn chu kỳ dùng
+khối này chạy <code>run_tests.py</code> 12/12</td>
+</tr>
+<tr class="even">
+<td><strong>ForwardUnit</strong></td>
+<td>Dựng lại: so <code>rd</code> của EX/MEM và MEM/WB với
+<code>rs1</code>, <code>rs2</code>, điều kiện <code>rd ≠ 0</code>, ưu
+tiên EX/MEM</td>
+<td><code>ForwardUnit.txt</code> pass · CPU pipeline dùng khối này chạy
+12/12 + fuzz 25/25</td>
+</tr>
+<tr class="odd">
+<td><strong>IDBypass, MUX ASel/BSel</strong></td>
+<td>Không cần vẽ lại. Đọc hiểu trong bản tham chiếu</td>
+<td>Giải thích được vì sao bypass WB→ID không đặt trong
+RegisterFile</td>
+</tr>
+<tr class="even">
+<td><strong>Báo cáo</strong></td>
+<td>Viết: nền số học, ALU, Register File, Branch Unit, data hazard và
+forwarding (4–5 trang) + cheat sheet 1 trang</td>
+<td>Công nhận bài, không phải sửa nội dung kỹ thuật</td>
+</tr>
+<tr class="odd">
+<td><strong>Demo</strong></td>
+<td>Quay phần forwarding trên Pipeline Monitor</td>
+<td>Có đoạn video 1,5–2 phút</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="cần-truyền-đạt-lại-cho-hà-và-công">3.2 Cần truyền đạt lại cho Hà
+và Công</h2>
+<p><strong>Ý chính phải truyền đạt</strong></p>
+<ol type="1">
+<li>Vì sao máy tính dùng bit và hex. Bù 2 cho phép cộng/trừ dùng chung
+mạch. Chỉ so sánh, dịch phải và mở rộng mới phải phân biệt có dấu hay
+không dấu.</li>
+<li><strong>Mô hình register → mạch tổ hợp → register</strong>: trong
+một chu kỳ mọi thứ “tính”, ở cạnh lên mọi register chụp cùng lúc. Không
+bao giờ đưa clock qua cổng logic, muốn dừng thì dùng Enable.</li>
+<li>ALU không “chạy if-else”: mọi phép tính cùng lúc, MUX chọn kết quả.
+ALUCtrl trùng với funct3 nên ALUControl gần như chỉ là nối dây.</li>
+<li>Register File: đọc là tổ hợp (chỉ là MUX), ghi phải chờ cạnh clock.
+x0 không phải thanh ghi mà là hằng 0 ở đầu vào MUX.</li>
+<li><strong>Data hazard (RAW)</strong> và forwarding: lấy kết quả từ
+EX/MEM (FwdA = 01) hoặc MEM/WB (FwdA = 10). Phải kiểm tra
+<code>rd ≠ 0</code>, EX/MEM được ưu tiên vì mới hơn.</li>
+<li>WB→ID bypass thay cho “ghi nửa đầu, đọc nửa sau chu kỳ” trong
+sách.</li>
+</ol>
+<p><strong>Demo phải cho người nghe xem</strong> - Mở <code>ALU</code>,
+đổi A, B, ALUCtrl bằng Poke tool, cho thấy SLT và SLTU ra khác nhau với
+<code>0xFFFFFFFF</code> và <code>1</code>. - Chạy
+<code>RV32I_SingleCycle.circ</code>, chỉ thanh ghi đổi giá trị ngay trên
+khối Register File sau cạnh lên. - Chạy <code>RV32I_Pipeline.circ</code>
+với chuỗi lệnh phụ thuộc, chỉ <code>FwdA</code>/<code>FwdB</code> bật
+đúng chu kỳ. - Chạy bản <code>RV32I_Pipeline_NoHazard.circ</code> cùng
+chuỗi đó để thấy kết quả sai.</p>
+<p><strong>Sau buổi, người nghe phải tự làm được</strong> - Đổi qua lại
+giữa nhị phân và hex, tính <code>−8</code> dịch phải theo SRA và SRL. -
+Giải thích được ghi Register File xảy ra lúc nào và thanh ghi nào được
+ghi. - Với <code>addi x1,x0,1</code> · <code>addi x2,x0,2</code> ·
+<code>add x3,x1,x2</code>, nói đúng FwdA và FwdB khi <code>add</code> ở
+EX.</p>
+<h1 id="quyền-đức-công-memory-pipeline-kiểm-thử-tích-hợp">4. Quyền Đức
+Công — Memory, Pipeline, Kiểm thử, Tích hợp</h1>
+<h2 id="đầu-việc-và-tiêu-chí-hoàn-thành-2">4.1 Đầu việc và tiêu chí hoàn
+thành</h2>
+<div class="tbl"><table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Đầu việc</th>
+<th>Việc cần làm</th>
+<th>Coi là hoàn thành khi</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Hạ tầng nhóm</strong></td>
+<td>Tạo repo chung, đưa project lên, chia sẻ link <code>LO_TRINH</code>,
+trang phân công và trang câu hỏi. Chạy được <code>run_tests.py</code>
+trên máy mình</td>
+<td>Cả 3 file CPU báo ALL PASSED trên máy Công · hai bạn kia mở được
+Logisim và chạy demo</td>
+</tr>
+<tr class="even">
+<td><strong>AddrDecode, LoadUnit, StoreUnit</strong></td>
+<td>Dựng lại trong file riêng <code>CONG.circ</code></td>
+<td>3 file test vector tương ứng pass 100%</td>
+</tr>
+<tr class="odd">
+<td><strong>Ghép single-cycle</strong></td>
+<td>Nạp <code>HA.circ</code>, <code>DUCANH.circ</code>,
+<code>CONG.circ</code> bằng <em>Load Library</em>, thay các khối tự dựng
+vào CPU đơn chu kỳ</td>
+<td><code>run_tests.py</code> 12/12 trên CPU dùng khối của cả nhóm</td>
+</tr>
+<tr class="even">
+<td><strong>Ghép pipeline</strong></td>
+<td>Thay HazardUnit, ForwardUnit tự dựng vào CPU pipeline. Hiểu 4 thanh
+ghi pipeline. Chạy bản NoHazard để có ví dụ lỗi</td>
+<td><code>run_tests.py</code> 12/12 + fuzz 25/25, số chu kỳ khớp mô
+hình</td>
+</tr>
+<tr class="odd">
+<td><strong>Đo đạc</strong></td>
+<td>Lập bảng CPI (single-cycle với pipeline), đếm load-use và số lần
+nhảy, chụp ảnh mạch cho báo cáo</td>
+<td>Có bảng số liệu và bộ ảnh</td>
+</tr>
+<tr class="even">
+<td><strong>Báo cáo</strong></td>
+<td>Viết: bộ nhớ và I/O, thanh ghi pipeline, kiểm thử, CPI, hạn chế, mở
+đầu, kết luận (3–4 trang). Ghép và biên tập toàn bộ (10–20 trang). Viết
+README nộp bài</td>
+<td>Báo cáo hoàn chỉnh, thống nhất giọng văn và thuật ngữ</td>
+</tr>
+<tr class="odd">
+<td><strong>Nộp bài</strong></td>
+<td>Chạy lại toàn bộ test trên máy của Hà hoặc Đức Anh, đóng gói source
++ video + báo cáo</td>
+<td>Nộp trước hạn ít nhất 3 tiếng</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="cần-truyền-đạt-lại-cho-hà-và-đức-anh">4.2 Cần truyền đạt lại cho
+Hà và Đức Anh</h2>
+<p><strong>Ý chính phải truyền đạt</strong></p>
+<ol type="1">
+<li>Bộ nhớ đánh địa chỉ <strong>theo byte</strong>, little-endian. Mỗi ô
+RAM là một word, nên ô = <code>Addr[13:2]</code> và byte trong ô =
+<code>Addr[1:0]</code>. Cùng lý do đó IMEM lấy <code>PC[11:2]</code> và
+PC tăng 4.</li>
+<li>LB/LH dịch byte về vị trí thấp rồi sign-extend, LBU/LHU zero-extend.
+SB/SH làm bằng <strong>read-modify-write</strong>, còn phần cứng thật
+dùng byte-enable.</li>
+<li>Bản đồ bộ nhớ và <strong>memory-mapped I/O</strong> (phần nâng cao
+GPIO/UART): thiết bị ngoại vi chỉ là vài địa chỉ. <code>sb</code> vào
+<code>0xF0000000</code> in ký tự, <code>lw</code> từ
+<code>0xF0000004</code> đọc phím, <code>sw</code> vào
+<code>0xF0000010</code> bật đèn. Đọc RXDATA có tác dụng phụ (lấy ký tự
+khỏi hàng đợi), nên chỉ được bật khi <code>MemRead = 1</code> và ở tầng
+MEM.</li>
+<li><strong>Thanh ghi pipeline</strong> cắt đường dài thành 5 đoạn. Mỗi
+thanh ghi mang theo dữ liệu lẫn <strong>tín hiệu điều khiển</strong> của
+lệnh. Stall = giữ (EN = 0). Flush = nạp 0 bằng MUX, đồng bộ, không dùng
+chân Clear.</li>
+<li><strong>Kiểm chứng</strong>: test vector cho từng module, golden
+model để so cả CPU (thanh ghi, RAM, TTY, số chu kỳ), fuzz test. Bản
+NoHazard fail mọi test chứng minh bộ test bắt được lỗi.</li>
+<li><strong>CPI</strong> và công thức
+<code>N + 4 + loaduse + 2·taken</code>. Vì sao CPI &gt; 1 mà pipeline
+vẫn nhanh hơn: chu kỳ clock ngắn hơn nhiều.</li>
+</ol>
+<p><strong>Demo phải cho người nghe xem</strong> - Mở <code>DMEM</code>
+trong lúc chạy <code>t05_mem.s</code>, chỉ từng byte bị <code>sb</code>
+và <code>sh</code> ghi đè. - Mở thanh ghi <code>ID_EX</code>, chỉ các
+trường đi theo lệnh và lúc một bubble (toàn 0) đi qua. - Chạy
+<code>run_tests.py</code> trên terminal: ALL PASSED với bản đúng, FAIL
+với bản NoHazard. - Chạy <code>t11_io.s</code>: click vào Keyboard gõ
+chữ, TTY in lại chữ hoa. LED 7 đoạn hiện số ký tự đã gõ.</p>
+<p><strong>Sau buổi, người nghe phải tự làm được</strong> - Tính ô RAM
+và byte offset của một địa chỉ bất kỳ, đọc đúng một byte theo
+little-endian. - Phân biệt stall và flush trên thanh ghi pipeline. - Tự
+chạy <code>rvasm.py</code> để nạp một chương trình vào ROM và chạy
+<code>run_tests.py</code> trên máy mình.</p>
+<h1 id="mốc-của-cả-nhóm">5. Mốc của cả nhóm</h1>
+<div class="tbl"><table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Mốc</th>
+<th>Hạn</th>
+<th>Tiêu chí</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Kickoff: chốt vai, chốt tên pin, cài Logisim 4.1.0 + Java 21</td>
+<td>T7 31/10</td>
+<td>Cả 3 người chạy được demo trên máy mình</td>
+</tr>
+<tr class="even">
+<td>Single-cycle dùng khối tự dựng</td>
+<td>T3 3/11</td>
+<td><code>run_tests.py</code> 12/12</td>
+</tr>
+<tr class="odd">
+<td>Pipeline dùng khối tự dựng</td>
+<td>T4 4/11</td>
+<td>12/12 + fuzz 25/25, số chu kỳ khớp</td>
+</tr>
+<tr class="even">
+<td>Chia sẻ kiến thức: 3 phiên trình bày + phản biện</td>
+<td>T5 5/11</td>
+<td>Theo file <strong>Bộ câu hỏi trình bày và phản biện</strong>
+(<code>CAU_HOI</code>)</td>
+</tr>
+<tr class="odd">
+<td>Hà và Đức Anh nộp phần báo cáo cho Công</td>
+<td>T6 6/11</td>
+<td>Đủ trang, đủ cheat sheet</td>
+</tr>
+<tr class="even">
+<td>Video demo + bảo vệ thử</td>
+<td>T7 7/11</td>
+<td>Ai cũng dẫn được một lệnh <code>lw</code> qua cả CPU</td>
+</tr>
+<tr class="odd">
+<td>Nộp bài</td>
+<td>CN 8/11</td>
+<td>Trước hạn ít nhất 3 tiếng</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Nếu bị trễ:</strong> bỏ module “nếu còn thời gian” trước. Vẫn
+trễ thì bỏ module thứ ba của mỗi người (HazardUnit / ForwardUnit /
+StoreUnit) và dùng bản tham chiếu thay vào. <strong>Không bỏ</strong>
+buổi chia sẻ kiến thức và buổi bảo vệ thử, vì thầy hỏi “vì sao” chứ
+không hỏi “ai vẽ”.</p>
+<h1 id="luật-kỹ-thuật">6. Luật kỹ thuật</h1>
+<ul>
+<li><strong>Không đổi tên circuit, tên pin, độ rộng pin</strong> so với
+bản tham chiếu. Nhờ vậy test vector chạy được trên mạch tự vẽ, và thay
+khối chỉ là xóa cũ, kéo mới.</li>
+<li><strong>Mỗi người một file <code>.circ</code> riêng</strong>
+(<code>HA.circ</code>, <code>DUCANH.circ</code>,
+<code>CONG.circ</code>). Chỉ Công sửa file CPU chính, nạp file của hai
+người kia bằng <em>Project → Load Library → Logisim Library…</em>. File
+<code>.circ</code> là XML, hai người cùng sửa một file sẽ ghi đè nhau và
+Git không merge được.</li>
+<li><strong>“Xong” một module</strong> nghĩa là test vector pass 100%,
+và người làm giải thích lại được cho người khác mà không cần nhìn tài
+liệu.</li>
+</ul>
+</main>
+</div>
