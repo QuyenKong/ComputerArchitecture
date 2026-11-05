@@ -1,0 +1,20 @@
+\makenoidxglossaries
+
+% Danh mục thuật ngữ và từ viết tắt
+\newglossaryentry{ALU}{type=\acronymtype, name={ALU}, description={Khối số học và logic (Arithmetic Logic Unit)}, first={ALU}}
+\newglossaryentry{CPI}{type=\acronymtype, name={CPI}, description={Số chu kỳ trung bình cho một lệnh (Cycles Per Instruction)}, first={CPI}}
+\newglossaryentry{CPU}{type=\acronymtype, name={CPU}, description={Bộ xử lý trung tâm (Central Processing Unit)}, first={CPU}}
+\newglossaryentry{GPIO}{type=\acronymtype, name={GPIO}, description={Cổng vào ra đa dụng (General Purpose Input/Output)}, first={GPIO}}
+\newglossaryentry{IF}{type=\acronymtype, name={IF, ID, EX, MEM, WB}, description={Năm tầng pipeline: nạp lệnh, giải mã, thực thi, truy cập bộ nhớ, ghi lại}, first={IF}}
+\newglossaryentry{ISA}{type=\acronymtype, name={ISA}, description={Kiến trúc tập lệnh (Instruction Set Architecture)}, first={ISA}}
+\newglossaryentry{ISS}{type=\acronymtype, name={ISS}, description={Trình mô phỏng ở mức lệnh (Instruction Set Simulator), ở đây là golden model \texttt{rvsim.py}}, first={ISS}}
+\newglossaryentry{NH}{type=\acronymtype, name={NH}, description={Bản pipeline không có forwarding và load-use stall, file \texttt{RV32I\_Pipeline\_} \texttt{NoHazard.circ}}, first={NH}}
+\newglossaryentry{NOP}{type=\acronymtype, name={NOP}, description={Lệnh không làm gì; trong RV32I là \texttt{addi x0, x0, 0}}, first={NOP}}
+\newglossaryentry{PC}{type=\acronymtype, name={PC}, description={Thanh ghi địa chỉ lệnh (Program Counter)}, first={PC}}
+\newglossaryentry{PL}{type=\acronymtype, name={PL}, description={Bản pipeline 5 tầng đầy đủ (\texttt{RV32I\_Pipeline.circ})}, first={PL}}
+\newglossaryentry{RAM}{type=\acronymtype, name={RAM}, description={Bộ nhớ đọc ghi; ở đây là bộ nhớ dữ liệu \texttt{DMEM}}, first={RAM}}
+\newglossaryentry{RAW}{type=\acronymtype, name={RAW}, description={Phụ thuộc đọc sau ghi (Read After Write), dạng data hazard trong pipeline}, first={RAW}}
+\newglossaryentry{ROM}{type=\acronymtype, name={ROM}, description={Bộ nhớ chỉ đọc; ở đây là bộ nhớ lệnh \texttt{IMEM}}, first={ROM}}
+\newglossaryentry{RV32I}{type=\acronymtype, name={RV32I}, description={Tập lệnh số nguyên cơ sở 32 bit của RISC-V}, first={RV32I}}
+\newglossaryentry{SC}{type=\acronymtype, name={SC}, description={Bản CPU đơn chu kỳ (\texttt{RV32I\_SingleCycle.circ})}, first={SC}}
+\newglossaryentry{UART}{type=\acronymtype, name={UART}, description={Giao tiếp nối tiếp không đồng bộ (Universal Asynchronous Receiver-Transmitter)}, first={UART}}

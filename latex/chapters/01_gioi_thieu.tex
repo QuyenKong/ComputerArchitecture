@@ -1,0 +1,71 @@
+\documentclass[../report.tex]{subfiles}
+\begin{document}
+
+\section{Mục tiêu và yêu cầu}
+
+Đề bài yêu cầu thiết kế, mô phỏng và kiểm thử một máy tính 32 bit theo kiến trúc tập lệnh RISC-V RV32I
+\cite{riscv-spec}, gồm CPU, bộ nhớ chương trình, bộ nhớ dữ liệu và các khối điều khiển. Phải có hai phiên bản:
+một CPU đơn chu kỳ và một CPU pipeline 5 tầng IF, ID, EX, MEM, WB xử lý đúng data hazard và control hazard cơ
+bản. Dữ liệu, lệnh, thanh ghi và PC đều rộng 32 bit, có 32 thanh ghi. Chương trình phải chạy từ lệnh nạp vào
+bộ nhớ lệnh, không được chỉnh tay giá trị thanh ghi. Công cụ là Logisim-evolution \cite{logisim}.
+
+Nhóm làm ba file mạch, đều mở bằng Logisim-evolution 4.1.0:
+
+\begin{itemize}
+  \item \file{circ/RV32I\_SingleCycle.circ}: CPU đơn chu kỳ, trong báo cáo gọi tắt là SC.
+  \item \file{circ/RV32I\_Pipeline.circ}: CPU pipeline 5 tầng có forwarding, bypass WB$\to$ID, stall khi
+        load-use và flush khi rẽ nhánh, gọi tắt là PL. Đây là phiên bản cuối cùng theo yêu cầu đề.
+  \item \file{circ/extra/RV32I\_Pipeline\_NoHazard.circ}: cùng pipeline nhưng tắt forwarding và load-use stall,
+        gọi tắt là NH. Bản này chỉ chạy đúng khi assembler chèn lệnh \texttt{nop}; nhóm dùng nó để đo xem phần
+        cứng xử lý hazard đem lại bao nhiêu.
+\end{itemize}
+
+\section{Đối chiếu yêu cầu với sản phẩm}
+
+Bảng~\ref{tab:req} liệt kê từng yêu cầu của đề và vị trí đáp ứng trong project.
+
+\begin{table}[H]
+\centering\small
+\caption{Yêu cầu của đề và phần hiện thực tương ứng}\label{tab:req}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{5.2cm}X@{}}
+\toprule
+Yêu cầu & Hiện thực \\
+\midrule
+Data, lệnh, thanh ghi, PC 32 bit; 32 thanh ghi & Datapath 32 bit, \sig{RegisterFile} có x0 cố định bằng 0 và x1 đến x31 \\
+Lệnh số học, logic (10 lệnh R) & \sig{ALU}, \sig{ALUControl}; chương trình \file{t01\_alu.s} \\
+Lệnh immediate (9 lệnh I) & \sig{ImmGen} và \sig{ALU}; \file{t01\_alu.s} \\
+LW, SW; tùy chọn LB, LH, LBU, LHU, SB, SH & \sig{LoadUnit}, \sig{StoreUnit}, RAM \sig{DMEM}; \file{t05\_mem.s}. Làm cả phần tùy chọn \\
+BEQ, BNE, JAL, JALR; tùy chọn BLT, BGE, BLTU, BGEU & \sig{BranchUnit} và MUX chọn PC kế tiếp; \file{t03\_branch.s}, \file{t04\_jump.s}. Làm cả phần tùy chọn \\
+Thêm ngoài danh sách tối thiểu & LUI, AUIPC; ECALL và EBREAK dùng làm lệnh dừng (halt) \\
+Phiên bản đơn chu kỳ & \file{circ/RV32I\_SingleCycle.circ} (chương~\ref{ch:single}) \\
+Pipeline 5 tầng, xử lý hazard & \file{circ/RV32I\_Pipeline.circ}: \sig{ForwardUnit}, \sig{IDBypass}, \sig{HazardUnit} (chương~\ref{ch:pipe}) \\
+Chạy từ lệnh nạp vào bộ nhớ lệnh & ROM \sig{IMEM}; thanh ghi chỉ đổi khi lệnh thực thi \\
+Công cụ assembly sang mã máy nạp ROM & \file{tools/rvasm.py}: sinh file hex hoặc nạp thẳng vào ROM trong file \file{.circ} \\
+Nâng cao: GPIO/UART & \sig{IOController}: UART TX ra TTY, UART RX từ Keyboard, GPIO ra LED 7 đoạn và 8 LED, GPIO vào 8 công tắc DIP \\
+Nâng cao: tăng hiệu năng pipeline & Forwarding từ EX/MEM và MEM/WB, bypass WB$\to$ID, tín hiệu \sig{UseRs1}/\sig{UseRs2} để không stall khi lệnh không đọc thanh ghi \\
+Bộ test từng module và toàn CPU & 13 file test vector trong \file{tests/vectors/}; 12 chương trình trong \file{programs/} và 25 chương trình ngẫu nhiên trong \file{programs/fuzz/}; \file{tools/run\_tests.py} (chương~\ref{ch:test}) \\
+README & \file{README.md}; phụ lục~\ref{app:guide} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Các mục nâng cao chưa làm là dự đoán nhánh động, cache, nhân chia, ngắt và số thực dấu phẩy động. Chương~\ref{ch:ext}
+ghi lại phần mở rộng đã làm, các hạn chế và hướng làm tiếp.
+
+\section{Cấu trúc project}
+
+\begin{itemize}
+  \item \file{circ/}: các file Logisim. Mỗi khối là một circuit con có tên và tên chân cố định, dùng chung giữa
+        SC và PL.
+  \item \file{programs/}: chương trình test viết bằng assembly; \file{programs/fuzz/}: 25 chương trình ngẫu nhiên
+        sinh bằng \file{tools/fuzz.py} với seed 0 đến 24.
+  \item \file{tests/vectors/}: test vector cho 13 module.
+  \item \file{tools/}: assembler \file{rvasm.py}, golden model \file{rvsim.py}, bộ chạy test \file{run\_tests.py},
+        công cụ so sánh ba phiên bản \file{compare.py}.
+  \item \file{generator/}: mã Python sinh ra các file \file{.circ}. Mạch có thể sửa trực tiếp trong Logisim, phần
+        sinh mã chỉ giúp dựng lại đồng nhất cả ba file.
+  \item \file{latex/}: báo cáo này, file chính \file{latex/report.tex}. Các bảng số chu kỳ và biểu đồ được sinh
+        bằng \file{latex/scripts/gen\_results.py} từ golden model, không gõ tay.
+\end{itemize}
+
+\end{document}

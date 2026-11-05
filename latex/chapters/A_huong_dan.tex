@@ -1,0 +1,78 @@
+\documentclass[../report.tex]{subfiles}
+\begin{document}
+
+Phụ lục này tóm tắt \file{README.md}. Yêu cầu phần mềm: Logisim-evolution 4.1.0 (cần Java 21) và Python 3.8 trở lên.
+Assembler và bộ test không cần thư viện Python ngoài; riêng script sinh biểu đồ của báo cáo cần \texttt{matplotlib}.
+
+\section{Mở project và chạy mô phỏng}
+
+\begin{enumerate}
+  \item Mở Logisim-evolution 4.1.0, chọn File $\to$ Open rồi chọn một trong hai file:\\
+        \file{circ/RV32I\_SingleCycle.circ}\\
+        \file{circ/RV32I\_Pipeline.circ}
+  \item Ctrl+K cho clock tự chạy, chỉnh tốc độ ở Simulate $\to$ Tick Frequency. Ctrl+T chạy từng nửa chu kỳ,
+        Ctrl+R reset.
+  \item Chương trình \file{demo.s} đã nạp sẵn trong ROM. Khi chạy xong, TTY in \texttt{Hello RISC-V!}, LED 7 đoạn hiện
+        \texttt{00E8}, 8 LED sáng và chân \sig{halt} lên 1.
+  \item Quan sát: 32 thanh ghi hiện trên khối \sig{RegisterFile}; RAM xem trên khối \sig{DMEM}; ở bản pipeline,
+        Pipeline Monitor hiện PC và lệnh ở từng tầng cùng \sig{Stall}, \sig{LoadUse}, \sig{E\_Redirect}, \sig{FwdA},
+        \sig{FwdB}.
+\end{enumerate}
+
+\section{Nạp chương trình mới}
+
+\begin{lstlisting}
+python tools/rvasm.py programs/t08_sort.s -o build/t08_sort
+\end{lstlisting}
+
+Lệnh trên sinh \file{build/t08\_sort.text.hex}, \file{.data.hex} và \file{.lst}. Trong Logisim, chuột phải ROM
+\sig{IMEM} $\to$ Load Image và chọn file \file{.text.hex}; nếu chương trình có \texttt{.data} thì làm tương tự với RAM
+\sig{DMEM} và file \file{.data.hex}. Có thể ghi thẳng vào file mạch:
+
+\begin{lstlisting}
+python tools/rvasm.py programs/t08_sort.s -o build/t08_sort \
+    --circ circ/RV32I_Pipeline.circ --circ-out build/sort_pipeline.circ
+\end{lstlisting}
+
+Với bản NH, thêm \texttt{--nohazard} để assembler chèn \texttt{nop}.
+
+\section{Chạy test}
+
+\begin{lstlisting}
+export LOGISIM_JAR=/path/to/logisim-evolution-4.1.0-all.jar
+python tools/run_tests.py circ/RV32I_SingleCycle.circ
+python tools/run_tests.py circ/RV32I_Pipeline.circ
+python tools/run_tests.py circ/RV32I_Pipeline.circ --programs programs/fuzz
+python tools/run_tests.py circ/extra/RV32I_Pipeline_NoHazard.circ --nohazard
+java -jar $LOGISIM_JAR -w ALU tests/vectors/ALU.txt circ/RV32I_Pipeline.circ
+python tools/compare.py programs/t06_hazard.s
+\end{lstlisting}
+
+Lệnh \texttt{-w} chạy test vector của một module và in \texttt{Passed: n, Failed: m}. Lệnh này không chạy được khi
+thư mục chứa file mạch có file autosave của một phiên Logisim đang mở (\file{.RV32I\_Pipeline.circ.autosave}); khi
+đó Logisim cần hỏi có khôi phục bản autosave không. Đóng Logisim hoặc chạy trên một bản sao của file mạch.
+
+\section{Dựng lại báo cáo}
+
+\begin{lstlisting}
+python latex/scripts/gen_results.py
+cd latex && latexmk -pdf report.tex
+\end{lstlisting}
+
+Script thứ nhất sinh lại các bảng số chu kỳ, giản đồ pipeline và biểu đồ trong \file{latex/generated/} từ golden
+model. Lệnh thứ hai biên dịch báo cáo (pdfLaTeX và biber).
+
+\section{Kịch bản demo}
+
+\begin{enumerate}
+  \item Mở \file{RV32I\_SingleCycle.circ}, giới thiệu sơ đồ khối. Chạy \file{demo.s}, chỉ vào \sig{RegisterFile}, TTY
+        và LED 7 đoạn. Nạp \file{t11\_io.s}, click vào khối Keyboard, gõ chữ thường và xem TTY in lại chữ hoa.
+  \item Mở \file{RV32I\_Pipeline.circ}, chạy từng chu kỳ tới một lần load-use: Pipeline Monitor cho \sig{Stall} = 1 và
+        bubble \texttt{00000000} ở EX. Chạy tới một lần rẽ nhánh nhảy: \sig{E\_Redirect} = 1 và hai lệnh phía sau
+        thành \texttt{00000000}.
+  \item Chạy \file{run\_tests.py} trên terminal, cho thấy \texttt{ALL PASSED} với SC và PL.
+  \item Chạy \file{run\_tests.py} trên bản NH không có \texttt{--nohazard} để thấy FAIL, rồi chạy lại với
+        \texttt{--nohazard} để thấy PASS.
+\end{enumerate}
+
+\end{document}

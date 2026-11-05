@@ -10,6 +10,8 @@ Bài tập lớn môn Kiến trúc máy tính tiên tiến: máy tính 32-bit ki
 
 So sánh 3 bản (số chu kỳ, giản đồ từng chu kỳ): `python tools/compare.py [programs/t06_hazard.s]`. Trang giải thích: `docs/SO_SANH.html`.
 
+**Báo cáo kỹ thuật (LaTeX):** `latex/report.tex`, bản PDF `latex/report.pdf`. Dựng lại: `python latex/scripts/gen_results.py` rồi `cd latex && latexmk -pdf report.tex`.
+
 **Hướng dẫn chi tiết và lộ trình tự xây dựng:** [`docs/LO_TRINH.md`](docs/LO_TRINH.md) (bản HTML: `docs/LO_TRINH.html`).
 
 ## Đặc tả
@@ -47,7 +49,7 @@ python3 tools/rvasm.py programs/t08_sort.s -o build/t08_sort --circ circ/RV32I_P
 ## Chạy test
 
 **Test từng module** (GUI): mở circuit con (ví dụ `ALU`) → Simulate → Test Vector → Load `tests/vectors/ALU.txt`.
-Dòng lệnh: `java -jar logisim-evolution-4.1.0-all.jar -w ALU tests/vectors/ALU.txt circ/RV32I_Pipeline.circ`
+Dòng lệnh: `java -jar logisim-evolution-4.1.0-all.jar -w ALU tests/vectors/ALU.txt circ/RV32I_Pipeline.circ` (in `Passed: n, Failed: m`). Lệnh này lỗi khi cạnh file mạch có file `.RV32I_*.circ.autosave` của một phiên Logisim đang mở; khi đó đóng Logisim hoặc chạy trên bản sao của file `.circ`.
 
 **Test toàn CPU** (headless, so với golden model `tools/rvsim.py`: 32 thanh ghi + toàn bộ RAM + TTY + GPIO + số chu kỳ):
 

@@ -1,0 +1,53 @@
+\documentclass[../report.tex]{subfiles}
+\begin{document}
+
+\section{Datapath}
+
+Trong CPU đơn chu kỳ, toàn bộ đường từ thanh ghi \sig{PC} qua các module đến register file và RAM là mạch tổ hợp.
+Mỗi lệnh xong trong một chu kỳ: ở cạnh lên của clock, \sig{PC}, thanh ghi đích và RAM cùng cập nhật. Hình~\ref{fig:sc}
+là mạch top-level \sig{RV32I\_SingleCycle}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{RV32I_SingleCycle.png}
+\caption{Mạch top-level của CPU đơn chu kỳ trong Logisim}\label{fig:sc}
+\end{figure}
+
+Một lệnh đi qua năm bước, tất cả trong cùng một chu kỳ:
+
+\begin{enumerate}
+  \item Nạp lệnh: \sig{PC} đưa vào \sig{IMEM} (\sig{PC[11:2]}) cho ra \sig{instr}; song song đó bộ cộng tính PC + 4.
+  \item Giải mã: \sig{Control} sinh tín hiệu điều khiển, \sig{RegisterFile} đọc rs1 và rs2, \sig{ImmGen} tạo
+        immediate.
+  \item Thực thi: A = rs1, PC hoặc 0 theo \sig{ASel}; B = rs2 hoặc immediate theo \sig{BSel}; \sig{ALU} tính,
+        \sig{BranchUnit} so sánh rs1 với rs2.
+  \item Truy cập bộ nhớ: địa chỉ là kết quả ALU. \sig{StoreUnit} ghép dữ liệu ghi, RAM ghi ở cạnh lên nếu
+        \sig{RamWE} = 1, \sig{LoadUnit} tách dữ liệu đọc.
+  \item Ghi lại: \sig{WBSel} chọn kết quả ALU, dữ liệu load hoặc PC + 4; register file ghi vào rd ở cạnh lên.
+\end{enumerate}
+
+PC kế tiếp được chọn bởi \sig{PCSel} = \sig{Taken} $\lor$ \sig{Jal} $\lor$ \sig{Jalr}: bằng 1 thì PC nhận kết quả
+ALU AND \texttt{0xFFFFFFFE}, bằng 0 thì nhận PC + 4. Đặc tả JALR yêu cầu xóa bit 0 của đích nhảy \cite{riscv-spec};
+với branch và JAL bit này vốn bằng 0, nên một mạch dùng chung cho cả ba. Thanh ghi \sig{PC} có enable = NOT
+\sig{Halt}, nên khi gặp EBREAK, CPU giữ nguyên trạng thái và chân \sig{halt} lên 1.
+
+\section{Ví dụ: lệnh \texttt{lw t4, 8(sp)}}
+
+Lệnh này có mã máy \texttt{0x00812E83}: immediate = 8, rs1 = x2, funct3 = 010, rd = x29, opcode = 0000011 (LOAD).
+\sig{Control} bật nhóm LOAD và cho \sig{RegWrite} = 1, \sig{ASel} = 0, \sig{BSel} = 1, \sig{ImmSel} = 0,
+\sig{MemRead} = 1, \sig{MemWrite} = 0, \sig{WBSel} = 1. ALU cộng sp với 8 ra địa chỉ, \sig{AddrDecode} thấy
+\sig{IsIO} = 0 nên đọc RAM, \sig{LoadUnit} chọn cả word theo funct3 = 010, MUX ghi lại chọn dữ liệu bộ nhớ, và ở
+cạnh lên t4 nhận giá trị. \sig{PCSel} = 0 nên PC nhận PC + 4.
+
+\section{Đường găng và giới hạn của thiết kế đơn chu kỳ}\label{sec:critical}
+
+Chu kỳ clock phải đủ dài cho đường tổ hợp dài nhất. Lệnh load đi qua nhiều khối nhất: \sig{IMEM}, \sig{Control}
+và \sig{RegisterFile}, \sig{ALU}, \sig{DMEM}, \sig{LoadUnit}, MUX ghi lại, rồi đến đầu vào register file. Các lệnh
+ngắn hơn như \texttt{add} không dùng RAM nhưng vẫn phải chờ hết chu kỳ đó.
+
+Logisim không mô phỏng trễ cổng, nên báo cáo dùng giả định trễ từng bước theo Patterson và Hennessy
+\cite[ch.~4]{patterson}: nạp lệnh 200~ps, đọc thanh ghi 100~ps, ALU 200~ps, truy cập bộ nhớ dữ liệu 200~ps, ghi thanh
+ghi 100~ps. Với giả định này, chu kỳ đơn chu kỳ là \resTSingle~ps. Đây là con số giả định để so sánh, không phải
+số đo trên mạch. Chương~\ref{ch:pipe} chia đường này thành năm tầng để rút ngắn chu kỳ clock.
+
+\end{document}

@@ -1,0 +1,154 @@
+\documentclass[../report.tex]{subfiles}
+\begin{document}
+
+Mỗi module là một circuit con trong file \file{.circ}, có tên chân cố định và một file test vector cùng tên trong
+\file{tests/vectors/}. Mục này mô tả giao diện, cấu tạo và lý do chọn cách làm của từng module. Ảnh chụp lấy
+trực tiếp từ Logisim.
+
+\section{ALU và ALUControl}
+
+\sig{ALU} nhận hai toán hạng \sig{A}, \sig{B} 32 bit và mã \sig{ALUCtrl} 4 bit, cho ra \sig{Y} 32 bit. Mười phép
+toán được tính song song bằng Adder, Subtractor, hai Comparator (một có dấu, một không dấu), ba cổng logic 32 bit
+và ba Shifter. MUX 8:1 chọn kết quả theo \sig{ALUCtrl[2:0]}, tức funct3; hai MUX 2:1 theo \sig{ALUCtrl[3]} chọn
+giữa ADD và SUB, giữa SRL và SRA. Lượng dịch chỉ lấy 5 bit thấp của \sig{B}, đúng với đặc tả RV32I. Kết quả 1 bit
+của Comparator được mở rộng 0 lên 32 bit cho SLT và SLTU.
+
+\begin{table}[H]
+\centering\small
+\caption{Mã hóa \sig{ALUCtrl}}\label{tab:aluctrl}
+\begin{tabular}{@{}cc|cc|cc|cc|cc@{}}
+\toprule
+Mã & Phép & Mã & Phép & Mã & Phép & Mã & Phép & Mã & Phép \\
+\midrule
+0000 & ADD & 1000 & SUB & 0001 & SLL & 0010 & SLT & 0011 & SLTU \\
+0100 & XOR & 0101 & SRL & 1101 & SRA & 0110 & OR & 0111 & AND \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\sig{ALUControl} sinh \sig{ALUCtrl} từ \sig{ALUOp}, funct3 và bit 30 của lệnh. Với lệnh R, bit 30 chọn SUB hoặc SRA.
+Với lệnh I, bit 30 thuộc immediate: lệnh \texttt{addi x1, x1, -1024} có bit 30 bằng 1. Vì vậy bit 3 của
+\sig{ALUCtrl} chỉ lấy bit 30 khi lệnh là R, hoặc khi lệnh là I với funct3 = 101 (SRAI). Thiếu điều kiện này thì
+ADDI với immediate âm bị tính thành phép trừ; \file{t01\_alu.s} có trường hợp kiểm tra lỗi đó.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\textwidth]{ALU.png}
+\caption{Circuit \sig{ALU}: mười phép toán tính song song, MUX chọn theo funct3}\label{fig:alu}
+\end{figure}
+
+\section{RegisterFile}
+
+\sig{RegisterFile} có 31 thanh ghi 32 bit (x1 đến x31), hai cổng đọc tổ hợp \sig{RA1}/\sig{RD1},
+\sig{RA2}/\sig{RD2} và một cổng ghi đồng bộ \sig{WA}, \sig{WD}, \sig{WE}. Mỗi cổng đọc là một MUX 32:1 có đầu vào
+0 nối hằng 0, nên x0 không phải một thanh ghi thật. Cổng ghi dùng Decoder 5$\to$32 với enable bằng \sig{WE}; đầu ra
+thứ $k$ nối vào chân enable của thanh ghi x$k$, nên ở cạnh lên chỉ thanh ghi được chọn chụp giá trị. Khối còn hiển
+thị giá trị 32 thanh ghi ngay trên hình hộp để quan sát khi demo.
+
+Module không tự bypass giá trị đang ghi sang cổng đọc. Trong CPU đơn chu kỳ, lệnh \texttt{addi x1, x1, 1} có
+rd = rs1; nếu có bypass bên trong thì đường ALU $\to$ \sig{WD} $\to$ \sig{RD1} $\to$ ALU thành vòng tổ hợp và mạch
+dao động. Pipeline cần bypass thì dùng khối \sig{IDBypass} đặt bên ngoài (mục~\ref{sec:fwd}).
+
+\section{ImmGen}
+
+\sig{ImmGen} tách lệnh thành 8 mảnh bit có vị trí cố định, ghép lại theo từng định dạng I, S, B, U, J, mở rộng dấu
+lên 32 bit rồi chọn bằng MUX theo \sig{ImmSel} (0 = I, 1 = S, 2 = B, 3 = U, 4 = J). Do các mảnh immediate nằm cùng
+chỗ giữa các định dạng (imm[10:5] luôn ở bit [30:25], imm[4:1] của S và B luôn ở bit [11:8]), khối này chủ yếu là
+Splitter, Bit Extender và một MUX. Bit 0 của offset B và J luôn bằng 0 vì lệnh dài 4 byte.
+
+\section{Control}
+
+\sig{Control} nhận lệnh 32 bit và sinh mọi tín hiệu điều khiển. Tín hiệu \sig{valid} = \sig{opcode[1]} AND
+\sig{opcode[0]} làm enable cho Decoder 5$\to$32 chọn theo \sig{opcode[6:2]}. Mười đầu ra được dùng tương ứng mười nhóm
+lệnh; mỗi tín hiệu điều khiển là OR của các nhóm cần nó, ví dụ \sig{RegWrite} = OP $\lor$ OP-IMM $\lor$ LOAD
+$\lor$ JAL $\lor$ JALR $\lor$ LUI $\lor$ AUIPC. Bảng~\ref{tab:ctrl} là bảng chân lý hiện thực trong mạch.
+
+\begin{table}[H]
+\centering\small
+\caption{Tín hiệu điều khiển theo nhóm lệnh}\label{tab:ctrl}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llccccccccc@{}}
+\toprule
+Nhóm & opcode & RW & ASel & BSel & ALUOp & Imm & MR & MW & WB & B/J/Jr \\
+\midrule
+OP (R) & 0110011 & 1 & 0 & 0 & 10 & -- & 0 & 0 & 0 & 0/0/0 \\
+OP-IMM & 0010011 & 1 & 0 & 1 & 11 & 0 & 0 & 0 & 0 & 0/0/0 \\
+LOAD & 0000011 & 1 & 0 & 1 & 00 & 0 & 1 & 0 & 1 & 0/0/0 \\
+STORE & 0100011 & 0 & 0 & 1 & 00 & 1 & 0 & 1 & -- & 0/0/0 \\
+BRANCH & 1100011 & 0 & 1 & 1 & 00 & 2 & 0 & 0 & -- & 1/0/0 \\
+JAL & 1101111 & 1 & 1 & 1 & 00 & 4 & 0 & 0 & 2 & 0/1/0 \\
+JALR & 1100111 & 1 & 0 & 1 & 00 & 0 & 0 & 0 & 2 & 0/0/1 \\
+LUI & 0110111 & 1 & 2 & 1 & 00 & 3 & 0 & 0 & 0 & 0/0/0 \\
+AUIPC & 0010111 & 1 & 1 & 1 & 00 & 3 & 0 & 0 & 0 & 0/0/0 \\
+SYSTEM & 1110011 & \multicolumn{9}{l}{\sig{Halt} = 1, các tín hiệu khác bằng 0} \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.3em}
+\begin{minipage}{0.95\textwidth}\footnotesize
+RW = \sig{RegWrite}, Imm = \sig{ImmSel}, MR = \sig{MemRead}, MW = \sig{MemWrite}, WB = \sig{WBSel},
+B/J/Jr = \sig{Branch}/\sig{Jal}/\sig{Jalr}. ASel: 0 = rs1, 1 = PC, 2 = hằng 0. WBSel: 0 = kết quả ALU,
+1 = dữ liệu bộ nhớ, 2 = PC + 4.
+\end{minipage}
+\end{table}
+
+Ngoài các tín hiệu trên, \sig{Control} sinh \sig{UseRs1} và \sig{UseRs2} cho biết lệnh có thật sự đọc rs1, rs2 hay
+không. Pipeline dùng hai tín hiệu này để không stall khi trường rs1 của LUI hoặc JAL tình cờ trùng rd của một lệnh
+load.
+
+\section{BranchUnit}
+
+\sig{BranchUnit} so sánh hai toán hạng bằng một Comparator không dấu (cho phép bằng và nhỏ hơn không dấu) và một
+Comparator có dấu. MUX 4:1 chọn theo \sig{funct3[2:1]}: 00 là bằng, 10 là nhỏ hơn có dấu, 11 là nhỏ hơn không
+dấu. Kết quả XOR với \sig{funct3[0]}, vì RISC-V mã hóa BNE, BGE, BGEU là phủ định của BEQ, BLT, BLTU, rồi AND với
+\sig{Branch} để ra \sig{Taken}.
+
+\section{LoadUnit, StoreUnit và AddrDecode}
+
+\sig{AddrDecode} tách địa chỉ thành \sig{WordAddr} = \sig{Addr[13:2]}, \sig{Off} = \sig{Addr[1:0]} và
+\sig{IsIO} = (\sig{Addr[31:28]} = \texttt{0xF}). \sig{RamWE} = \sig{MemWrite} AND NOT \sig{IsIO}, \sig{IoWE} =
+\sig{MemWrite} AND \sig{IsIO}.
+
+\sig{LoadUnit} dịch phải word đọc được \sig{Off}$\times$8 bit để byte cần lấy về vị trí thấp nhất, mở rộng dấu hoặc
+mở rộng 0 theo 8 hay 16 bit, rồi chọn bằng MUX theo funct3 (000 LB, 001 LH, 010 LW, 100 LBU, 101 LHU).
+
+\sig{StoreUnit} làm phép đọc, sửa, ghi. Với mặt nạ $M$ = mask $\ll$ (\sig{Off}$\times$8), trong đó mask là
+\texttt{0xFF} cho SB, \texttt{0xFFFF} cho SH và \texttt{0xFFFFFFFF} cho SW, word mới là
+$\mathit{New} = (\mathit{Old} \land \lnot M) \lor ((\mathit{WData} \ll \mathit{Off}\times8) \land M)$.
+Ví dụ \texttt{sb} byte \texttt{0xAB} vào offset 2 của word \texttt{0x11223344} cho $M$ = \texttt{0x00FF0000} và
+word mới \texttt{0x11AB3344}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\textwidth]{StoreUnit.png}
+\caption{Circuit \sig{StoreUnit}: ghép byte hoặc halfword mới vào word cũ}\label{fig:store}
+\end{figure}
+
+\section{IOController}
+
+\sig{IOController} hiện thực UART và GPIO theo kiểu memory-mapped (bảng~\ref{tab:memmap}). \sig{Addr[4:2]} qua
+Decoder 3$\to$8 (enable = \sig{IsIO}) chọn thanh ghi I/O. Khi ghi, \sig{TxWE} = \sig{MemWrite} AND chọn 0 đẩy
+ký tự \sig{WData[6:0]} ra TTY; thanh ghi \sig{GPIO\_OUT} 32 bit có enable = \sig{MemWrite} AND chọn 4. Khi đọc,
+MUX 8:1 trả về ký tự từ Keyboard, thanh ghi trạng thái, \sig{GPIO\_OUT} hoặc 8 công tắc DIP. Ở mức CPU, MUX
+\sig{IsIO} ? \sig{IoRData} : RAM đưa dữ liệu vào \sig{LoadUnit}, nên \texttt{lbu} hay \texttt{lh} trên thanh ghi I/O
+vẫn đúng.
+
+Đọc \texttt{UART\_RXDATA} lấy ký tự ra khỏi hàng đợi Keyboard. Tín hiệu \sig{KbdRE} vì thế phải AND với
+\sig{MemRead}; nếu không, một lệnh \texttt{add} tình cờ có kết quả \texttt{0xF0000004} cũng làm mất ký tự. Trong
+pipeline, việc đọc chỉ xảy ra ở tầng MEM, nơi lệnh chắc chắn đã qua điểm flush, nên thanh ghi EX/MEM phải mang theo
+trường \sig{MemRead}. UART dùng hỏi vòng (polling) thanh ghi trạng thái, không có ngắt.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{IOController.png}
+\caption{Circuit \sig{IOController}: UART (TTY, Keyboard) và GPIO}\label{fig:io}
+\end{figure}
+
+\section{PerfCounters}
+
+\sig{PerfCounters} có hai bộ đếm 32 bit. \sig{cycles} tăng ở mỗi cạnh lên khi CPU đang chạy (\sig{Run} = 1, tức
+chưa halt). \sig{instret} tăng khi có lệnh hoàn thành (\sig{Retire} = 1): ở SC là mỗi chu kỳ, ở PL là khi lệnh ở
+tầng WB có \sig{valid} = 1, nên bubble không được đếm. Hai giá trị được đưa ra chân \sig{cycles}, \sig{instret} để
+bộ test đọc và tính CPI.
+
+\end{document}

@@ -1,0 +1,15 @@
+\begin{tabular}{@{}lccccccccccccccl@{}}
+\toprule
+Lệnh & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & Ghi chú \\
+\midrule
+\texttt{sw t3, 0(sp)} & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  &  &  &  &  &  &  \\
+\texttt{lw t4, 0(sp)} &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  &  &  &  &  &  \\
+\texttt{addi t5, t4, 1} &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cST}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  &  &  & stall \\
+\texttt{lw t6, 0(sp)} &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  &  &  \\
+\texttt{sw t6, 4(sp)} &  &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cST}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  & stall \\
+\texttt{lw a0, 4(sp)} &  &  &  &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  \\
+\texttt{beq a0, t3, ok1} &  &  &  &  &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cST}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB & stall, nhảy \\
+\textcolor{gray}{\texttt{lui s11, 1}} &  &  &  &  &  &  &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID &  &  & bị flush \\
+\textcolor{gray}{\texttt{addi s11, s11, -1107}} &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{cIF}\tiny IF &  &  & bị flush \\
+\bottomrule
+\end{tabular}

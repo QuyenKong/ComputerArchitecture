@@ -1,0 +1,18 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Circuit \texttt {ALU}: mười phép toán tính song song, MUX chọn theo funct3}}{8}{figure.caption.12}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Circuit \texttt {StoreUnit}: ghép byte hoặc halfword mới vào word cũ}}{10}{figure.caption.14}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Circuit \texttt {IOController}: UART (TTY, Keyboard) và GPIO}}{10}{figure.caption.15}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Mạch top-level của CPU đơn chu kỳ trong Logisim}}{12}{figure.caption.16}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Mạch top-level của CPU pipeline. Pipeline Monitor ở góc dưới hiển thị PC và lệnh ở từng tầng cùng các tín hiệu \texttt {Stall}, \texttt {LoadUse}, \texttt {E\_Redirect}, \texttt {FwdA}, \texttt {FwdB}}}{14}{figure.caption.17}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {7.1}{\ignorespaces Số chu kỳ của ba phiên bản (bỏ \texttt {t09\_recursion.s} vì lớn hơn các chương trình khác hơn 10 lần)}}{22}{figure.caption.24}%
+\contentsline {figure}{\numberline {7.2}{\ignorespaces Tăng tốc so với SC theo giả định trễ; đường đứt nét là mức lý tưởng khi CPI = 1}}{24}{figure.caption.26}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsfinish 
+\contentsfinish 

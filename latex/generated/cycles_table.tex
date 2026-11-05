@@ -1,0 +1,20 @@
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+Chương trình & Lệnh & SC & NH & NOP & PL & Load-use & Nhảy & CPI (PL) \\
+\midrule
+\texttt{demo.s} & 188 & 188 & 358 & 122 & 248 & 12 & 22 & 1.32 \\
+\texttt{t01\_alu.s} & 37 & 37 & 50 & 9 & 41 & 0 & 0 & 1.11 \\
+\texttt{t02\_upper.s} & 14 & 14 & 28 & 10 & 18 & 0 & 0 & 1.29 \\
+\texttt{t03\_branch.s} & 54 & 54 & 125 & 35 & 90 & 0 & 16 & 1.67 \\
+\texttt{t04\_jump.s} & 84 & 84 & 164 & 28 & 136 & 0 & 24 & 1.62 \\
+\texttt{t05\_mem.s} & 32 & 32 & 50 & 14 & 36 & 0 & 0 & 1.12 \\
+\texttt{t06\_hazard.s} & 49 & 49 & 124 & 53 & 76 & 5 & 9 & 1.55 \\
+\texttt{t07\_fib.s} & 146 & 146 & 250 & 62 & 188 & 0 & 19 & 1.29 \\
+\texttt{t08\_sort.s} & 424 & 424 & 766 & 168 & 643 & 45 & 85 & 1.52 \\
+\texttt{t09\_recursion.s} & 4765 & 4765 & 10184 & 2895 & 7753 & 464 & 1260 & 1.63 \\
+\texttt{t10\_hello.s} & 97 & 97 & 185 & 52 & 149 & 16 & 16 & 1.54 \\
+\texttt{t11\_io.s} & 103 & 103 & 225 & 94 & 139 & 8 & 12 & 1.35 \\
+\midrule
+Tổng & 5993 & 5993 & 12509 & 3542 & 9517 & 550 & 1463 & 1.59 \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,25 @@
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {1.1}{\ignorespaces Yêu cầu của đề và phần hiện thực tương ứng}}{2}{table.caption.7}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Sáu định dạng lệnh RV32I}}{4}{table.caption.8}%
+\contentsline {table}{\numberline {2.2}{\ignorespaces Các quyết định thiết kế}}{5}{table.caption.9}%
+\contentsline {table}{\numberline {2.3}{\ignorespaces Bản đồ bộ nhớ}}{5}{table.caption.10}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Mã hóa \texttt {ALUCtrl}}}{7}{table.caption.11}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Tín hiệu điều khiển theo nhóm lệnh}}{9}{table.caption.13}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {5.1}{\ignorespaces Các trường của thanh ghi pipeline}}{15}{table.caption.18}%
+\contentsline {table}{\numberline {5.2}{\ignorespaces Giản đồ pipeline của 7 lệnh trong \texttt {t06\_hazard.s}}}{18}{table.caption.19}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {6.1}{\ignorespaces Kết quả test vector từng module (số vector đạt / tổng số)}}{20}{table.caption.20}%
+\contentsline {table}{\numberline {6.2}{\ignorespaces Các chương trình test trong \texttt {programs/}}}{21}{table.caption.21}%
+\contentsline {table}{\numberline {6.3}{\ignorespaces Kết quả chạy \texttt {run\_tests.py}}}{21}{table.caption.22}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {7.1}{\ignorespaces Số lệnh và số chu kỳ trên SC, NH và PL}}{22}{table.caption.23}%
+\contentsline {table}{\numberline {7.2}{\ignorespaces Thời gian ước tính (ns) và tăng tốc theo giả định trễ}}{23}{table.caption.25}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {8.1}{\ignorespaces Hướng phát triển và cách đo lợi ích}}{26}{table.caption.27}%
+\addvspace {10\p@ }
+\contentsfinish 
+\contentsfinish 

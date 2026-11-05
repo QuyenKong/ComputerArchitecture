@@ -1,0 +1,21 @@
+\begin{tabular}{@{}lcccccccccccccccccl@{}}
+\toprule
+Lệnh & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 & Ghi chú \\
+\midrule
+\texttt{sw t3, 0(sp)} & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  &  &  &  &  &  &  &  &  &  \\
+\texttt{lw t4, 0(sp)} &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  &  &  &  &  &  &  &  &  \\
+\textit{nop (chèn)} &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  &  &  &  &  &  &  &  \\
+\textit{nop (chèn)} &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  &  &  &  &  &  &  \\
+\texttt{addi t5, t4, 1} &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  &  &  &  &  &  \\
+\texttt{lw t6, 0(sp)} &  &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  &  &  &  &  \\
+\textit{nop (chèn)} &  &  &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  &  &  &  \\
+\textit{nop (chèn)} &  &  &  &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  &  &  \\
+\texttt{sw t6, 4(sp)} &  &  &  &  &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  &  \\
+\texttt{lw a0, 4(sp)} &  &  &  &  &  &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  &  \\
+\textit{nop (chèn)} &  &  &  &  &  &  &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  &  \\
+\textit{nop (chèn)} &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB &  &  \\
+\texttt{beq a0, t3, ok1} &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID & \cellcolor{cEX}\tiny EX & \cellcolor{cME}\tiny ME & \cellcolor{cWB}\tiny WB & nhảy \\
+\textcolor{gray}{\texttt{lui s11, 1}} &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{cIF}\tiny IF & \cellcolor{cID}\tiny ID &  &  & bị flush \\
+\textcolor{gray}{\texttt{nop}} &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{cIF}\tiny IF &  &  & bị flush \\
+\bottomrule
+\end{tabular}
