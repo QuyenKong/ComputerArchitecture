@@ -28,9 +28,9 @@ def read_hex(path):
     return words
 
 
-def run_one(src_path, circ, jar, pipeline, timeout=600, verbose=False):
+def run_one(src_path, circ, jar, pipeline, timeout=600, verbose=False, nohazard=False):
     src = open(src_path).read()
-    asm = rvasm.Assembler(dump=True)
+    asm = rvasm.Assembler(dump=True, nohazard=nohazard)
     words, data, _ = asm.assemble(src)
     stdin = rvsim.stdin_of(src)
     cpu = rvsim.CPU(words, data, stdin).run()
@@ -43,12 +43,19 @@ def run_one(src_path, circ, jar, pipeline, timeout=600, verbose=False):
         rvasm.write_hex(dfile, rvasm.data_words(data) or [0])
         ofile = os.path.join(td, 'ram.hex')
         t0 = time.time()
+        p = subprocess.Popen(['java', '-Djava.awt.headless=true', '-jar', jar, c2, '-t', 'table,halt,tty',
+                              '-l', dfile, '--save', ofile],
+                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         try:
-            r = subprocess.run(['java', '-Djava.awt.headless=true', '-jar', jar, c2, '-t', 'table,halt,tty',
-                                '-l', dfile, '--save', ofile], capture_output=True, text=True, timeout=timeout,
-                               input=stdin)
+            # bytes, not text mode: on Windows text mode turns \n into \r\n before it reaches the Keyboard
+            out, err = p.communicate(stdin.encode('latin-1'), timeout=timeout)
         except subprocess.TimeoutExpired:
+            if os.name == 'nt':   # 'java' may be the javapath launcher: kill the whole process tree
+                subprocess.run(['taskkill', '/F', '/T', '/PID', str(p.pid)], capture_output=True)
+            p.kill()
+            p.communicate()
             return False, f'CPU did not halt within {timeout}s (wrong branch/loop?)', time.time() - t0
+        r = subprocess.CompletedProcess(p.args, p.returncode, out.decode('latin-1'), err.decode('latin-1'))
         dt = time.time() - t0
         lines = [l for l in r.stdout.splitlines() if l.strip()]
         if not os.path.exists(ofile):
@@ -96,12 +103,14 @@ def main():
     ap.add_argument('--jar', default=os.environ.get('LOGISIM_JAR', 'logisim-evolution-4.1.0-all.jar'))
     ap.add_argument('--timeout', type=int, default=120, help='seconds per program')
     ap.add_argument('--programs', default=os.path.join(os.path.dirname(__file__), '..', 'programs'))
+    ap.add_argument('--nohazard', action='store_true',
+                    help='assemble with NOPs inserted for the pipeline without forwarding/stall')
     a = ap.parse_args()
     pipeline = 'ipeline' in os.path.basename(a.circ)
     files = sorted(f for f in glob.glob(os.path.join(a.programs, '*.s')) if a.k in os.path.basename(f))
     ok_all = True
     for f in files:
-        ok, msg, dt = run_one(f, a.circ, a.jar, pipeline, timeout=a.timeout)
+        ok, msg, dt = run_one(f, a.circ, a.jar, pipeline, timeout=a.timeout, nohazard=a.nohazard)
         ok_all &= ok
         print(f'{"PASS" if ok else "FAIL"}  {os.path.basename(f):24s} {dt:5.1f}s  {msg}')
     print('ALL PASSED' if ok_all else 'SOME TESTS FAILED')

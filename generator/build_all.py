@@ -16,6 +16,8 @@ def common():
 def main():
     os.makedirs(os.path.join(OUT, 'extra'), exist_ok=True)
     words = rvasm.Assembler().assemble(open(DEMO).read())[0] if os.path.exists(DEMO) else [0x00100073]
+    # the pipeline without forwarding/stall gets the same demo with NOPs inserted, so it runs correctly
+    words_nop = rvasm.Assembler(nohazard=True).assemble(open(DEMO).read())[0] if os.path.exists(DEMO) else [0x00100073]
 
     def make_single():
         subs = common()
@@ -31,7 +33,7 @@ def main():
     def make_naive():
         subs = common() + [M.build_pipereg(n) for n in M.PIPE_FIELDS] + \
             [M.build_forward(), M.build_hazard(), M.build_idbypass()]
-        top = cpu_pipeline.build_pipeline(subs, words, hazards=False)
+        top = cpu_pipeline.build_pipeline(subs, words_nop, hazards=False)
         return [top] + subs, top.name
 
     for fn, name in ((make_single, 'RV32I_SingleCycle.circ'), (make_pipe, 'RV32I_Pipeline.circ'),

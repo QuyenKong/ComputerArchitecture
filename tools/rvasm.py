@@ -71,11 +71,44 @@ def split_operands(s):
     return out
 
 
+def regs_rw(mn, ops):
+    """(registers read, register written) of one real instruction; x0 is left out."""
+    def r(tok):
+        return reg(tok)
+    def base(tok):
+        m = re.fullmatch(r'(.*)\((.*)\)', tok.strip())
+        return r(m.group(2))
+    reads, wr = [], None
+    if mn in R_TYPE:
+        wr, reads = r(ops[0]), [r(ops[1]), r(ops[2])]
+    elif mn in I_ALU or mn in SHIFT_I:
+        wr, reads = r(ops[0]), [r(ops[1])]
+    elif mn in LOADS:
+        wr, reads = r(ops[0]), [base(ops[1])]
+    elif mn in STORES:
+        reads = [r(ops[0]), base(ops[1])]
+    elif mn in BRANCHES:
+        reads = [r(ops[0]), r(ops[1])]
+    elif mn == 'jalr':
+        wr, reads = r(ops[0]), [r(ops[1]) if len(ops) == 3 else base(ops[1])]
+    elif mn in ('jal', 'lui', 'auipc'):
+        wr = r(ops[0])
+    return {x for x in reads if x}, (wr or None)
+
+
 class Assembler:
-    def __init__(self, dump=False):
+    def __init__(self, dump=False, nohazard=False):
+        """nohazard=True: insert NOPs so that no instruction reads a register written by one of the
+        2 instructions just before it. This is what the pipeline without forwarding / load-use
+        stall (circ/extra/RV32I_Pipeline_NoHazard.circ) needs: its WB->ID bypass covers distance 3,
+        a taken branch/jump flushes 2 slots, so a linear scan of the program is enough.
+        Programs that compute code addresses from a fixed layout (e.g. 'jalr t3, t2, 8') still work
+        as long as no NOP lands inside that range."""
         self.symbols = {}
         self.equs = set()
         self.dump = dump
+        self.nohazard = nohazard
+        self.nops_added = 0
 
     # ---- expressions --------------------------------------------------------
     def eval(self, expr, pc=0, need=True):
@@ -304,6 +337,8 @@ class Assembler:
             sec = 'text'
             lc = {'text': TEXT_BASE, 'data': DATA_BASE}
             text, data, listing = {}, {}, []
+            recent = [None, None]     # rd written by the last 2 instruction slots (nohazard mode)
+            self.nops_added = 0
             for ln, raw, kind, a, rest in items:
                 try:
                     if kind == 'label':
@@ -319,6 +354,21 @@ class Assembler:
                         raise AsmError('instruction outside .text')
                     ops = split_operands(rest)
                     for mn, o in self.expand(a, ops, sizing):
+                        if self.nohazard:
+                            reads, wr = regs_rw(mn, o)
+                            need = 2 if recent[0] in reads else 1 if recent[1] in reads else 0
+                            for _ in range(need):
+                                if not sizing:
+                                    text[lc['text']] = 0x00000013
+                                    listing.append((lc['text'], 0x00000013, 'nop', ln, '(nop chèn cho NoHazard)'))
+                                lc['text'] += 4
+                                recent = [None, recent[0]]
+                                self.nops_added += 1
+                            recent = [wr, recent[0]]
+                            if mn in ('jal', 'jalr'):
+                                # the next instruction is only ever reached by a jump, and every jump
+                                # flushes 2 slots -> its producers are already >= 3 slots away
+                                recent = [None, None]
                         pc = lc['text']
                         if not sizing:
                             word = self.encode(mn, o, pc) & 0xFFFFFFFF
@@ -436,8 +486,10 @@ def main():
                     'stores x1..x31 at 0x704..0x77C before halting')
     ap.add_argument('--circ', help='.circ file whose ROM (label IMEM) gets the program')
     ap.add_argument('--circ-out', help='where to write the patched .circ (default: overwrite --circ)')
+    ap.add_argument('--nohazard', action='store_true', help='insert NOPs so the program runs correctly on '
+                    'circ/extra/RV32I_Pipeline_NoHazard.circ (no forwarding, no load-use stall)')
     a = ap.parse_args()
-    asm = Assembler(dump=a.dump)
+    asm = Assembler(dump=a.dump, nohazard=a.nohazard)
     try:
         words, data, listing = asm.assemble(open(a.src, encoding='utf-8').read())
     except AsmError as e:
@@ -450,6 +502,8 @@ def main():
         for pc, w, ins, ln, raw in listing:
             f.write(f'{pc:08x}:  {w:08x}   {ins:<28} # L{ln}: {raw}\n')
     print(f'{len(words)} instructions, {len(data)} data bytes -> {out}.text.hex / .data.hex / .lst')
+    if a.nohazard:
+        print(f'  ({asm.nops_added} NOPs inserted for the NoHazard pipeline)')
     if a.circ:
         patch_circ(a.circ, a.circ_out or a.circ, words)
         print(f'ROM "IMEM" in {a.circ_out or a.circ} updated')

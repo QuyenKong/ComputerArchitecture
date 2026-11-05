@@ -6,7 +6,9 @@ Bài tập lớn môn Kiến trúc máy tính tiên tiến: máy tính 32-bit ki
 |---|---|
 | `circ/RV32I_SingleCycle.circ` | CPU đơn chu kỳ |
 | `circ/RV32I_Pipeline.circ` | CPU pipeline IF→ID→EX→MEM→WB: forwarding, WB→ID bypass, stall load-use, flush khi branch/jump (predict not-taken) |
-| `circ/extra/RV32I_Pipeline_NoHazard.circ` | Pipeline cố ý **không** xử lý data hazard, dùng để minh họa lỗi |
+| `circ/extra/RV32I_Pipeline_NoHazard.circ` | Pipeline cố ý **không** có forwarding và load-use stall. Chạy đúng khi assembler chèn `nop` (`rvasm.py --nohazard`, `run_tests.py --nohazard`); ROM đã nạp sẵn `demo.s` có chèn `nop` |
+
+So sánh 3 bản (số chu kỳ, giản đồ từng chu kỳ): `python tools/compare.py [programs/t06_hazard.s]`. Trang giải thích: `docs/SO_SANH.html`.
 
 **Hướng dẫn chi tiết và lộ trình tự xây dựng:** [`docs/LO_TRINH.md`](docs/LO_TRINH.md) (bản HTML: `docs/LO_TRINH.html`).
 
