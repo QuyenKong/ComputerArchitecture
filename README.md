@@ -10,6 +10,8 @@ Bài tập lớn môn Kiến trúc máy tính tiên tiến: máy tính 32-bit ki
 
 So sánh 3 bản (số chu kỳ, giản đồ từng chu kỳ): `python tools/compare.py [programs/t06_hazard.s]`. Trang giải thích: `docs/SO_SANH.html`.
 
+**Video demo:** `demo/demo_RV32I.mp4` (khoảng 3 phút, phụ đề tiếng Việt): CPU đơn chu kỳ chạy `demo.s`, pipeline chạy `t06_hazard.s` (stall, forwarding, flush trên Pipeline Monitor), UART/GPIO với `t11_io.s`, và `run_tests.py` trên cả ba bản.
+
 **Báo cáo kỹ thuật (LaTeX):** `latex/report.tex`, bản PDF `latex/report.pdf`. Dựng lại: `python latex/scripts/gen_results.py` rồi `cd latex && latexmk -pdf report.tex`.
 
 **Hướng dẫn chi tiết và lộ trình tự xây dựng:** [`docs/LO_TRINH.md`](docs/LO_TRINH.md) (bản HTML: `docs/LO_TRINH.html`).
