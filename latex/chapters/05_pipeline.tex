@@ -50,22 +50,12 @@ Structural hazard không xảy ra vì bộ nhớ lệnh và bộ nhớ dữ li�
 cổng ghi. Data hazard xảy ra khi một lệnh cần kết quả của lệnh trước mà lệnh đó chưa ghi vào register file.
 Control hazard xảy ra vì pipeline đã nạp tiếp hai lệnh sau một lệnh nhảy trước khi biết lệnh đó có nhảy hay không.
 
-\subsection{Forwarding và bypass WB$\to$ID}\label{sec:fwd}
+\subsection{\texorpdfstring{Forwarding và bypass WB$\to$ID}{Forwarding và bypass WB-ID}}\label{sec:fwd}
 
 Kết quả của một lệnh ALU đã có ở cuối tầng EX, chỉ chưa được ghi vào register file. \sig{ForwardUnit} so sánh
-rs1, rs2 của lệnh ở EX với rd của lệnh ở MEM và WB rồi chọn nguồn cho từng toán hạng:
-
-\begin{center}\small
-\begin{tabularx}{\textwidth}{@{}c>{\raggedright\arraybackslash}X@{}}
-\toprule
-\sig{FwdA} & Điều kiện (tương tự cho \sig{FwdB} với rs2) \\
-\midrule
-01 & EX/MEM.RegWrite và EX/MEM.rd $\neq$ 0 và EX/MEM.rd = ID/EX.rs1 \\
-10 & MEM/WB.RegWrite và MEM/WB.rd $\neq$ 0 và MEM/WB.rd = ID/EX.rs1, khi điều kiện 01 không thỏa \\
-00 & còn lại: dùng giá trị đọc ở ID \\
-\bottomrule
-\end{tabularx}
-\end{center}
+rs1, rs2 của lệnh ở EX với rd của lệnh ở MEM và WB. \sig{FwdA} = 01 (lấy từ EX/MEM) khi EX/MEM.RegWrite = 1,
+EX/MEM.rd $\neq$ 0 và EX/MEM.rd = ID/EX.rs1. \sig{FwdA} = 10 (lấy từ MEM/WB) khi điều kiện tương tự với MEM/WB đúng
+còn điều kiện 01 sai. Các trường hợp khác cho \sig{FwdA} = 00, dùng giá trị đọc ở ID. \sig{FwdB} làm tương tự với rs2.
 
 Điều kiện rd $\neq$ 0 ngăn lệnh \texttt{add x0, \ldots} forward một giá trị khác 0 cho lệnh sau đọc x0. EX/MEM được
 ưu tiên vì khi hai lệnh liên tiếp cùng ghi một thanh ghi, giá trị mới nhất thuộc lệnh gần hơn. MUX forwarding đặt
@@ -108,14 +98,9 @@ Các phương trình của \sig{HazardUnit} là:
 EBREAK ở ID làm \sig{Stall} = 1 để ngừng nạp lệnh mới. Chân \sig{halt} lấy từ trường \sig{Halt} của MEM/WB, nên
 CPU chỉ dừng khi EBREAK tới WB, lúc mọi lệnh trước đó đã ghi xong.
 
-\subsection{Số chu kỳ}
-
-Từ các cơ chế trên, số chu kỳ của PL cho một chương trình có $N$ lệnh là
-\[
-\text{cycles} = N + 4 + \text{số lần load-use} + 2 \times \text{số lần nhảy}.
-\]
-Số 4 là các chu kỳ lấp đầy pipeline. Bộ test so sánh đúng con số này với bộ đếm \sig{cycles} của Logisim trên mọi
-chương trình (chương~\ref{ch:test}).
+Từ các cơ chế trên, một chương trình $N$ lệnh chạy trên PL mất
+$N + 4 + (\text{số lần load-use}) + 2 \times (\text{số lần nhảy})$ chu kỳ, trong đó 4 là số chu kỳ lấp đầy pipeline.
+Bộ test so đúng con số này với bộ đếm \sig{cycles} của Logisim trên mọi chương trình (chương~\ref{ch:test}).
 
 \section{Bản NoHazard và cách chèn NOP}\label{sec:nh}
 
@@ -127,11 +112,10 @@ forwarding nối hằng 0, và đầu vào \sig{E\_MemRead} của \sig{HazardUni
 Để bản NH chạy đúng, assembler có chế độ \texttt{--nohazard} chèn \texttt{nop} theo hai quy tắc. Lệnh đọc rd của
 lệnh ngay trước được chèn 2 \texttt{nop}; lệnh đọc rd của lệnh trước đó 2 vị trí được chèn 1 \texttt{nop}. Sau đó
 khoảng cách giữa hai lệnh là 3 và \sig{IDBypass} lo phần còn lại. Bộ đếm khoảng cách được đặt lại sau
-\texttt{jal} và \texttt{jalr}, vì lệnh đích chỉ đến được qua một lần nhảy và mỗi lần nhảy đã flush 2 chu kỳ. Đây
-là cách các CPU pipeline không có interlock xử lý hazard bằng phần mềm.
+\texttt{jal} và \texttt{jalr}, vì lệnh đích chỉ đến được qua một lần nhảy và mỗi lần nhảy đã flush 2 chu kỳ.
 
 Bảng~\ref{tab:diag} so sánh cùng bảy lệnh của \file{t06\_hazard.s} trên hai bản. Ô màu đỏ là chu kỳ lệnh bị stall
-ở ID. Bảng được sinh tự động từ golden model bằng \file{latex/scripts/gen\_results.py}.
+ở ID; bảng sinh tự động từ golden model.
 
 \begin{table}[H]
 \centering\scriptsize

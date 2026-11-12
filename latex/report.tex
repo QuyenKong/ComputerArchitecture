@@ -15,6 +15,7 @@
 \usepackage{times} % Chọn font Time New Romans
 \usepackage{array} % Tạo bảng array
 \usepackage{enumitem} % Cho phép thay đổi kí hiệu của list
+\setlist{itemsep=1pt,topsep=3pt,parsep=0pt}
 \usepackage{subfiles} % Chèn các file nhỏ, giúp chia các chapter ra nhiều file hơn
 \usepackage{titlesec} % Giúp chỉnh sửa các tiêu đề, đề mục như chương, phần,..
 \usepackage{titletoc}
@@ -76,7 +77,7 @@
 
 \fancypagestyle{plain}{%
 \fancyhf{} % clear all header and footer fields
-\fancyfoot[RO,RE]{\thepage} %RO=right odd, RE=right even
+\fancyfoot[R]{\thepage} %RO=right odd, RE=right even
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}}
 
@@ -218,8 +219,8 @@
 
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[RE, LO]{\small\leftmark}
-\fancyfoot[RE, LO]{\thepage}
+\fancyhead[L]{\small\leftmark}
+\fancyfoot[L]{\thepage}
 
 \chapter{GIỚI THIỆU}
 \label{ch:intro}

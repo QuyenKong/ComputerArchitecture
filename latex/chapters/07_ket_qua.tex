@@ -15,17 +15,11 @@ thực thi; cột ``Load-use'' và ``Nhảy'' là số lần stall và số lầ
 \input{generated/cycles_table.tex}
 \end{table}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{cycles.pdf}
-\caption{Số chu kỳ của ba phiên bản (bỏ \file{t09\_recursion.s} vì lớn hơn các chương trình khác hơn 10 lần)}\label{fig:cycles}
-\end{figure}
-
-Quan sát từ bảng. Trên SC, CPI luôn bằng 1. Trên PL, CPI của cả 12 chương trình là \resTotCPI, cao nhất ở
+Trên SC, CPI luôn bằng 1. Trên PL, CPI của cả 12 chương trình là \resTotCPI, cao nhất ở
 \file{t09\_recursion.s} với \resNineCPI. Bản NH có CPI tính trên số lệnh gốc là \resTotCPINH: tổng cộng nó thực thi
 \resTotNOP{} lệnh \texttt{nop}, trong khi PL chỉ stall \resTotLU{} chu kỳ cho load-use.
 
-Diễn giải. Số chu kỳ thêm của PL so với số lệnh đến từ hai nguồn có thể đếm chính xác. Mỗi lần nhảy mất 2 chu kỳ
+Số chu kỳ thêm của PL so với số lệnh đến từ hai nguồn có thể đếm chính xác. Mỗi lần nhảy mất 2 chu kỳ
 flush, mỗi lần load-use mất 1 chu kỳ stall, cộng 4 chu kỳ lấp đầy pipeline. Trên \file{t09\_recursion.s}, \resNineBR{}
 lần nhảy tốn \resNineFlush{} chu kỳ, gấp hơn 5 lần \resNineLU{} chu kỳ của load-use. Chương trình đệ quy có nhiều
 lệnh gọi, trả về và rẽ nhánh, nên control hazard là nguồn mất mát lớn nhất. Ở NH, mọi phụ thuộc gần đều phải chờ
@@ -33,19 +27,13 @@ bằng \texttt{nop}, kể cả phụ thuộc ALU sang ALU mà PL forward đượ
 
 \section{Thời gian thực thi theo giả định trễ}
 
-Số chu kỳ chưa đủ để so sánh, vì chu kỳ clock của ba bản khác nhau. Logisim không mô phỏng trễ cổng, nên bảng
-\ref{tab:time} dùng giả định trễ đã nêu ở mục~\ref{sec:critical}: \resTSingle~ps cho SC và \resTPipe~ps cho NH và
+Số chu kỳ chưa đủ để so sánh, vì chu kỳ clock của ba bản khác nhau. Logisim không mô phỏng trễ cổng, nên hình~\ref{fig:speedup}
+dùng giả định trễ đã nêu ở mục~\ref{sec:critical}: \resTSingle~ps cho SC và \resTPipe~ps cho NH và
 PL. Thời gian bằng số chu kỳ nhân chu kỳ clock. Các con số này là ước tính theo giả định, không phải số đo.
-
-\begin{table}[H]
-\centering\small
-\caption{Thời gian ước tính (ns) và tăng tốc theo giả định trễ}\label{tab:time}
-\input{generated/time_table.tex}
-\end{table}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{speedup.pdf}
+\includegraphics[width=0.85\textwidth]{speedup.pdf}
 \caption{Tăng tốc so với SC theo giả định trễ; đường đứt nét là mức lý tưởng khi CPI = 1}\label{fig:speedup}
 \end{figure}
 

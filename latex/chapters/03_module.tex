@@ -33,7 +33,7 @@ ADDI với immediate âm bị tính thành phép trừ; \file{t01\_alu.s} có tr
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.72\textwidth]{ALU.png}
+\includegraphics[width=0.6\textwidth]{ALU.png}
 \caption{Circuit \sig{ALU}: mười phép toán tính song song, MUX chọn theo funct3}\label{fig:alu}
 \end{figure}
 
@@ -120,7 +120,7 @@ word mới \texttt{0x11AB3344}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.78\textwidth]{StoreUnit.png}
+\includegraphics[width=0.62\textwidth]{StoreUnit.png}
 \caption{Circuit \sig{StoreUnit}: ghép byte hoặc halfword mới vào word cũ}\label{fig:store}
 \end{figure}
 
@@ -137,12 +137,6 @@ vẫn đúng.
 \sig{MemRead}; nếu không, một lệnh \texttt{add} tình cờ có kết quả \texttt{0xF0000004} cũng làm mất ký tự. Trong
 pipeline, việc đọc chỉ xảy ra ở tầng MEM, nơi lệnh chắc chắn đã qua điểm flush, nên thanh ghi EX/MEM phải mang theo
 trường \sig{MemRead}. UART dùng hỏi vòng (polling) thanh ghi trạng thái, không có ngắt.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{IOController.png}
-\caption{Circuit \sig{IOController}: UART (TTY, Keyboard) và GPIO}\label{fig:io}
-\end{figure}
 
 \section{PerfCounters}
 

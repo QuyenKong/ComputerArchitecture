@@ -1,112 +1,74 @@
 \documentclass[../report.tex]{subfiles}
 \begin{document}
 
-Kiểm thử chia hai mức: test vector cho từng module và chương trình chạy trên toàn CPU. Ở mức CPU, kết quả của
-Logisim được so với một mô hình tham chiếu viết độc lập với mạch. Mọi kết quả trong chương này được chạy lại ngày
+Kiểm thử chia hai mức: test vector cho từng module và chương trình chạy trên toàn CPU. Mọi kết quả trong chương này được chạy lại ngày
 05/11/2026 trên Logisim-evolution 4.1.0, Java 21, Windows 11.
 
 \section{Toolchain}
 
-\subsection{Assembler \file{tools/rvasm.py}}
+Assembler \file{tools/rvasm.py} dịch toàn bộ RV32I, các lệnh giả thông dụng (\texttt{li}, \texttt{la},
+\texttt{call}, \texttt{ret}, \ldots) và các directive \texttt{.text}, \texttt{.data}, \texttt{.word}, \texttt{.asciz},
+\ldots{} Đầu ra là \file{.text.hex} và \file{.data.hex} để nạp ROM, RAM bằng \emph{Load Image}, kèm file \file{.lst}.
+Tùy chọn \texttt{--circ} ghi thẳng mã máy vào ROM \sig{IMEM} trong file \file{.circ}; \texttt{--nohazard} chèn
+\texttt{nop} cho bản NH (mục~\ref{sec:nh}). Lệnh giả \texttt{li} với hằng 32 bit tách thành \texttt{lui} và
+\texttt{addi}; vì \texttt{addi} mở rộng dấu, khi bit 11 của phần thấp bằng 1 thì phần cao phải cộng thêm 1, và
+\file{t02\_upper.s} kiểm tra trường hợp hằng \texttt{0x800}.
 
-Assembler dịch toàn bộ RV32I, các lệnh giả thông dụng (\texttt{li}, \texttt{la}, \texttt{mv}, \texttt{nop},
-\texttt{j}, \texttt{call}, \texttt{ret}, \texttt{beqz}, \texttt{bgt}, \ldots), các directive \texttt{.text},
-\texttt{.data}, \texttt{.word}, \texttt{.half}, \texttt{.byte}, \texttt{.space}, \texttt{.align}, \texttt{.ascii},
-\texttt{.asciz}, \texttt{.equ} và \texttt{\%hi()}, \texttt{\%lo()}. Đầu ra là file \file{.text.hex} và
-\file{.data.hex} để nạp vào ROM và RAM bằng \emph{Load Image}, kèm file \file{.lst} ghi địa chỉ, mã máy và dòng
-nguồn. Tùy chọn \texttt{--circ} ghi thẳng mã máy vào ROM \sig{IMEM} trong file \file{.circ}. Tùy chọn
-\texttt{--nohazard} chèn \texttt{nop} cho bản NH theo quy tắc ở mục~\ref{sec:nh}.
+Golden model \file{tools/rvsim.py} là trình mô phỏng mức lệnh viết bằng Python, không dùng gì từ file mạch. Nó ghi
+lại 32 thanh ghi, toàn bộ RAM, chuỗi TTY, GPIO\_OUT, và đếm số lần load-use, số lần nhảy để tính số chu kỳ của PL
+theo công thức ở chương~\ref{ch:pipe}. Với SC, số chu kỳ bằng số lệnh.
 
-Lệnh giả \texttt{li} với hằng 32 bit được tách thành \texttt{lui} và \texttt{addi}. Vì \texttt{addi} mở rộng dấu
-immediate 12 bit, khi bit 11 của phần thấp bằng 1 thì phần cao phải cộng thêm 1; \file{t02\_upper.s} kiểm tra
-trường hợp hằng \texttt{0x800}.
-
-\subsection{Golden model \file{tools/rvsim.py}}
-
-\file{rvsim.py} là trình mô phỏng ở mức lệnh, viết bằng Python, không dùng gì từ file mạch. Nó thực thi chương
-trình, ghi lại 32 thanh ghi, toàn bộ RAM, chuỗi ký tự ra TTY, giá trị GPIO\_OUT, và đếm số lần load-use và số lần
-nhảy để tính số chu kỳ của PL theo công thức ở chương~\ref{ch:pipe}. Với SC, số chu kỳ bằng số lệnh.
-
-\subsection{Bộ chạy test \file{tools/run\_tests.py}}
-
-Với mỗi chương trình, \file{run\_tests.py} làm bốn bước:
-
-\begin{enumerate}
-  \item Assemble ở chế độ dump: lệnh EBREAK cuối chương trình được thay bằng một đoạn mã lưu x1 đến x31 vào vùng
-        \texttt{0x704}--\texttt{0x77C} rồi mới dừng. Nhờ vậy giá trị thanh ghi đọc được từ file RAM xuất ra.
-  \item Ghi mã máy vào ROM của một bản sao file \file{.circ}.
-  \item Chạy Logisim không giao diện (\texttt{-t table,halt,tty}), nạp RAM bằng \texttt{-l}, xuất RAM bằng
-        \texttt{--save}. Nếu chương trình có dòng \texttt{\# STDIN:}, runner gõ chuỗi đó vào Keyboard.
-  \item So với golden model: 31 thanh ghi, toàn bộ 16 KiB RAM, chuỗi TTY, GPIO\_OUT, và hai bộ đếm \sig{cycles},
-        \sig{instret}. Riêng chương trình có nhập UART thì không so số chu kỳ, vì thời điểm ký tự đến phụ thuộc
-        Logisim.
-\end{enumerate}
-
-Vì so cả số chu kỳ, bộ test bắt được lỗi về thời gian mà kết quả cuối vẫn đúng, ví dụ stall thừa một chu kỳ hoặc
-flush thiếu.
+Bộ chạy test \file{tools/run\_tests.py} thay EBREAK cuối chương trình bằng đoạn mã lưu x1 đến x31 vào vùng
+\texttt{0x704}--\texttt{0x77C}, ghi mã máy vào ROM của một bản sao file \file{.circ}, chạy Logisim không giao diện rồi so với
+golden model: 31 thanh ghi, 16 KiB RAM, chuỗi TTY, GPIO\_OUT và hai bộ đếm \sig{cycles}, \sig{instret}. Chương trình có dòng
+\texttt{\# STDIN:} được gõ chuỗi đó vào Keyboard và không so số chu kỳ, vì thời điểm ký tự đến phụ thuộc Logisim.
+Vì so cả số chu kỳ, bộ test bắt được lỗi thời gian mà kết quả cuối vẫn đúng, ví dụ stall thừa hoặc flush thiếu.
 
 \section{Test vector từng module}\label{sec:vec}
 
 Mỗi file trong \file{tests/vectors/} có dòng tiêu đề là tên chân và mỗi dòng sau là một bộ giá trị vào cùng giá trị
 ra mong đợi. Giá trị mong đợi được sinh từ mô hình Python trong \file{generator/refmodels.py}. Hai module tuần tự
 \sig{RegisterFile} và \sig{IOController} có cột \sig{CLK} trong vector để tạo cạnh lên. Bảng~\ref{tab:vec} là kết
-quả chạy bằng lệnh \texttt{java -jar logisim-evolution-4.1.0-all.jar -w <Module> <vector> <file.circ>}.
+quả chạy bằng tùy chọn \texttt{-w} của Logisim (phụ lục~\ref{app:guide}).
 
 \begin{table}[H]
 \centering\small
-\caption{Kết quả test vector từng module (số vector đạt / tổng số)}\label{tab:vec}
+\caption{Kết quả test vector (đạt / tổng số); ba khối cuối chỉ có ở PL}\label{tab:vec}
 \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}Xrr@{}}
 \toprule
 Module & Nội dung vector & SC & PL \\
 \midrule
-\sig{ALU} & ngẫu nhiên và giá trị biên \texttt{0x7FFFFFFF}, \texttt{0x80000000}, $-1$ & 250/250 & 250/250 \\
+\sig{ALU} & ngẫu nhiên và giá trị biên & 250/250 & 250/250 \\
 \sig{ALUControl} & vét cạn 64 tổ hợp & 64/64 & 64/64 \\
 \sig{ImmGen} & lệnh ngẫu nhiên với mọi \sig{ImmSel} & 300/300 & 300/300 \\
-\sig{Control} & lệnh ngẫu nhiên, gồm lệnh không hợp lệ và lệnh 0 & 400/400 & 400/400 \\
-\sig{RegisterFile} & tuần tự, 200 bước ghi và đọc, mỗi bước 2 dòng clock & 400/400 & 400/400 \\
-\sig{BranchUnit} & funct3 ngẫu nhiên, 20\% cặp toán hạng bằng nhau & 300/300 & 300/300 \\
+\sig{Control} & gồm lệnh không hợp lệ và lệnh 0 & 400/400 & 400/400 \\
+\sig{RegisterFile} & tuần tự, 200 bước ghi và đọc & 400/400 & 400/400 \\
+\sig{BranchUnit} & 20\% cặp toán hạng bằng nhau & 300/300 & 300/300 \\
 \sig{LoadUnit} & funct3 và offset 0--3 ngẫu nhiên & 300/300 & 300/300 \\
 \sig{StoreUnit} & funct3 và offset 0--3 ngẫu nhiên & 300/300 & 300/300 \\
 \sig{AddrDecode} & địa chỉ RAM và I/O & 200/200 & 200/200 \\
-\sig{IOController} & tuần tự, 200 bước đọc ghi các thanh ghi I/O & 400/400 & 400/400 \\
-\sig{ForwardUnit} & số hiệu thanh ghi dồn vào x0, x1, x2, x5 để hay trùng & -- & 400/400 \\
-\sig{HazardUnit} & như trên, thêm \sig{Redirect} và \sig{D\_Halt} & -- & 400/400 \\
-\sig{IDBypass} & như trên, dữ liệu 32 bit ngẫu nhiên & -- & 300/300 \\
+\sig{IOController} & tuần tự, 200 bước đọc ghi & 400/400 & 400/400 \\
+\sig{ForwardUnit} & số hiệu thanh ghi dồn vào x0, x1, x2, x5 & -- & 400/400 \\
+\sig{HazardUnit} & như trên, thêm \sig{Redirect}, \sig{D\_Halt} & -- & 400/400 \\
+\sig{IDBypass} & như trên, dữ liệu ngẫu nhiên & -- & 300/300 \\
 \midrule
 Tổng & & 2914/2914 & 4014/4014 \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Ba khối \sig{ForwardUnit}, \sig{HazardUnit}, \sig{IDBypass} chỉ có trong file pipeline nên cột SC để trống.
-
 \section{Chương trình test toàn CPU}
 
-\begin{table}[H]
-\centering\small
-\caption{Các chương trình test trong \file{programs/}}\label{tab:progs}
-\begin{tabularx}{\textwidth}{@{}lX@{}}
-\toprule
-Chương trình & Nội dung \\
-\midrule
-\file{demo.s} & Chương trình nạp sẵn trong ROM: in \texttt{Hello RISC-V!}, tính tổng 12 số Fibonacci (\texttt{0xE8}), hiện lên LED 7 đoạn và bật 8 LED \\
-\file{t01\_alu.s} & Mọi lệnh R và I số học, gồm trường hợp biên và ADDI với immediate âm \\
-\file{t02\_upper.s} & LUI, AUIPC và hằng lớn \\
-\file{t03\_branch.s} & Sáu lệnh rẽ nhánh, cả nhánh nhảy và không nhảy \\
-\file{t04\_jump.s} & JAL, JALR, gọi và trả về hàm, bảng nhảy \\
-\file{t05\_mem.s} & LW, SW và các lệnh load, store byte, halfword \\
-\file{t06\_hazard.s} & Forwarding khoảng cách 1, 2, 3; load-use; ghi x0; nhảy ngược; JALR dùng thanh ghi vừa load \\
-\file{t07\_fib.s} & 20 số Fibonacci đầu tiên ghi vào bộ nhớ \\
-\file{t08\_sort.s} & Sắp xếp nổi bọt 10 số có dấu trong \texttt{.data} \\
-\file{t09\_recursion.s} & Giai thừa và Fibonacci đệ quy dùng stack \\
-\file{t10\_hello.s} & In chuỗi ra TTY \\
-\file{t11\_io.s} & Đọc ghi GPIO, nhận ký tự từ Keyboard, đổi sang chữ hoa và in ra TTY \\
-\bottomrule
-\end{tabularx}
-\end{table}
+Thư mục \file{programs/} có 12 chương trình. \file{demo.s} nạp sẵn trong ROM, in \texttt{Hello RISC-V!} và hiện tổng 12 số Fibonacci
+lên LED 7 đoạn. \file{t01\_alu.s} đến \file{t05\_mem.s} phủ từng nhóm lệnh:
+lệnh R và I số học (gồm ADDI với immediate âm), LUI và AUIPC, sáu lệnh rẽ nhánh, JAL và JALR, load và store byte,
+halfword, word. \file{t06\_hazard.s} gom các trường hợp forwarding khoảng cách 1, 2, 3, load-use, ghi x0 và JALR dùng
+thanh ghi vừa load. \file{t07\_fib.s}, \file{t08\_sort.s} (sắp xếp nổi bọt) và \file{t09\_recursion.s}
+(đệ quy dùng stack) là chương trình thực tế hơn. \file{t10\_hello.s} và \file{t11\_io.s} kiểm
+tra UART và GPIO.
 
-Ngoài 12 chương trình trên, \file{tools/fuzz.py} sinh 25 chương trình ngẫu nhiên (seed 0 đến 24), mỗi chương trình
-khoảng 120 lệnh trộn số học, load, store và rẽ nhánh với nhiều phụ thuộc gần nhau để kích hoạt forwarding và stall.
+Ngoài ra \file{tools/fuzz.py} sinh 25 chương trình ngẫu nhiên (seed 0 đến 24, mỗi chương trình 189 đến 231 lệnh)
+với nhiều phụ thuộc gần nhau để kích hoạt forwarding và stall.
 
 \section{Kết quả}\label{sec:testres}
 
@@ -125,9 +87,9 @@ NH & \texttt{--nohazard} & 12/12 PASS & 25/25 PASS \\
 \end{tabular}
 \end{table}
 
-Ở mọi lần PASS, số chu kỳ Logisim đếm được khớp đúng với golden model, trừ \file{t11\_io.s} là chương trình không so
-số chu kỳ. Bản NH chạy chương trình bình thường thì sai ngay từ \file{demo.s}: thanh ghi \texttt{sp} ra
+Ở mọi lần PASS, số chu kỳ Logisim đếm khớp với golden model (trừ \file{t11\_io.s}, không so số chu kỳ).
+Bản NH chạy chương trình bình thường thì sai ngay từ \file{demo.s}: thanh ghi \texttt{sp} ra
 \texttt{0xFFFFFFF0} thay vì \texttt{0x00003FF0}, vì \texttt{addi sp, sp, -16} đọc \texttt{sp} trước khi
-\texttt{lui sp, 4} kịp ghi. Kết quả này cho thấy bộ test phát hiện được việc thiếu forwarding và stall.
+\texttt{lui sp, 4} kịp ghi.
 
 \end{document}

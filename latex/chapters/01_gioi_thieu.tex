@@ -52,20 +52,8 @@ README & \file{README.md}; phụ lục~\ref{app:guide} \\
 Các mục nâng cao chưa làm là dự đoán nhánh động, cache, nhân chia, ngắt và số thực dấu phẩy động. Chương~\ref{ch:ext}
 ghi lại phần mở rộng đã làm, các hạn chế và hướng làm tiếp.
 
-\section{Cấu trúc project}
-
-\begin{itemize}
-  \item \file{circ/}: các file Logisim. Mỗi khối là một circuit con có tên và tên chân cố định, dùng chung giữa
-        SC và PL.
-  \item \file{programs/}: chương trình test viết bằng assembly; \file{programs/fuzz/}: 25 chương trình ngẫu nhiên
-        sinh bằng \file{tools/fuzz.py} với seed 0 đến 24.
-  \item \file{tests/vectors/}: test vector cho 13 module.
-  \item \file{tools/}: assembler \file{rvasm.py}, golden model \file{rvsim.py}, bộ chạy test \file{run\_tests.py},
-        công cụ so sánh ba phiên bản \file{compare.py}.
-  \item \file{generator/}: mã Python sinh ra các file \file{.circ}. Mạch có thể sửa trực tiếp trong Logisim, phần
-        sinh mã chỉ giúp dựng lại đồng nhất cả ba file.
-  \item \file{latex/}: báo cáo này, file chính \file{latex/report.tex}. Các bảng số chu kỳ và biểu đồ được sinh
-        bằng \file{latex/scripts/gen\_results.py} từ golden model, không gõ tay.
-\end{itemize}
+Mã nguồn chia thành \file{circ/} (file mạch), \file{generator/} (Python sinh lại file mạch), \file{programs/}
+(chương trình test), \file{tests/vectors/} (test vector từng module), \file{tools/} (assembler, golden model, bộ
+chạy test) và \file{latex/} (báo cáo này). Cách mở project và chạy test ở phụ lục~\ref{app:guide}.
 
 \end{document}

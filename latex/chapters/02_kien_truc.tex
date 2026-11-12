@@ -48,14 +48,10 @@ ghi các quyết định thiết kế chính.
 Quyết định & Lý do và đánh đổi \\
 \midrule
 Kiến trúc Harvard: \sig{IMEM} là ROM, \sig{DMEM} là RAM riêng & Nạp lệnh và load/store không tranh nhau một cổng bộ nhớ, tránh structural hazard giữa tầng IF và MEM. Đổi lại chương trình không tự sửa mã được. \\
-Mã \sig{ALUCtrl} = \{bit 30, funct3\} & Ba bit thấp của \sig{ALUCtrl} chính là funct3, bit 3 phân biệt SUB với ADD và SRA với SRL. ALU chọn kết quả bằng MUX 8:1 theo funct3, \sig{ALUControl} gần như chỉ là nối dây. \\
-ALU tính luôn địa chỉ đích & Với branch và JAL, đầu vào A của ALU là PC; với JALR là rs1. Đích nhảy = kết quả ALU AND \texttt{0xFFFFFFFE}. Không cần bộ cộng PC + imm riêng. \\
-\sig{BranchUnit} riêng & ALU đang bận tính địa chỉ, nên phép so sánh rs1 với rs2 làm ở khối riêng với 2 comparator. \\
-\sig{Control} dựng kiểu PLA & Decoder 5$\to$32 tạo một đường cho mỗi nhóm lệnh, mỗi tín hiệu điều khiển là OR của các nhóm cần nó. Bảng chân lý đọc được ngay trên hình. \\
-Lệnh \texttt{0x00000000} là NOP & Decoder chỉ bật khi \sig{opcode[1:0]} = 11, nên lệnh toàn 0 cho mọi tín hiệu điều khiển bằng 0. Flush một tầng pipeline chỉ cần nạp 0. \\
-SB, SH bằng đọc, sửa rồi ghi cả word & RAM của Logisim chỉ có byte enable khi đọc đồng bộ, không dùng được cho CPU đơn chu kỳ. \sig{StoreUnit} đọc word cũ, thay byte hoặc halfword rồi ghi lại. \\
+ALU tính luôn địa chỉ đích & Với branch và JAL, đầu vào A của ALU là PC; với JALR là rs1. Đích nhảy = kết quả ALU AND \texttt{0xFFFFFFFE}. Không cần bộ cộng PC + imm riêng; phép so sánh rs1 với rs2 vì thế làm ở \sig{BranchUnit}. \\
+Lệnh \texttt{0x00000000} là NOP & Decoder trong \sig{Control} chỉ bật khi \sig{opcode[1:0]} = 11, nên lệnh toàn 0 cho mọi tín hiệu điều khiển bằng 0. Flush một tầng pipeline chỉ cần nạp 0. \\
+SB, SH bằng đọc, sửa rồi ghi cả word & RAM của Logisim chỉ có byte enable khi đọc đồng bộ, không dùng được cho CPU đơn chu kỳ. \\
 Memory-mapped I/O & UART và GPIO là vài địa chỉ đặc biệt; CPU dùng chính \texttt{lw}, \texttt{sw}, \texttt{lb}, \texttt{sb} để điều khiển, không cần lệnh mới. \\
-Bộ đếm \sig{cycles}, \sig{instret} & Đo số chu kỳ và số lệnh hoàn thành để tính CPI và so sánh các phiên bản. \\
 \bottomrule
 \end{tabularx}
 \end{table}

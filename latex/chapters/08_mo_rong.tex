@@ -3,54 +3,36 @@
 
 \section{Phần mở rộng đã làm}
 
-Ngoài yêu cầu cơ bản, nhóm làm thêm các phần sau:
-
-\begin{itemize}
-  \item Các lệnh tùy chọn của đề: LB, LH, LBU, LHU, SB, SH, BLT, BGE, BLTU, BGEU, cùng LUI và AUIPC.
-  \item GPIO và UART theo kiểu memory-mapped (\sig{IOController}, mục nâng cao của đề). Chương trình
-        \file{t11\_io.s} đọc 8 công tắc DIP, ghi LED, nhận ký tự từ Keyboard, đổi sang chữ hoa và in ra TTY.
-  \item Forwarding đủ hai nguồn EX/MEM và MEM/WB, bypass WB$\to$ID, và tín hiệu \sig{UseRs1}, \sig{UseRs2} để không
-        stall khi lệnh không thật sự đọc thanh ghi.
-  \item Bộ đếm \sig{cycles}, \sig{instret} trong mạch và Pipeline Monitor hiển thị lệnh ở từng tầng.
-  \item Toolchain: assembler, golden model, bộ chạy test tự động không cần giao diện, bộ sinh chương trình ngẫu nhiên,
-        và công cụ \file{tools/compare.py} in giản đồ pipeline của bất kỳ chương trình nào.
-  \item Bản NH và chế độ assembler \texttt{--nohazard}, để đo phần đóng góp của phần cứng xử lý hazard.
-\end{itemize}
+Ngoài yêu cầu cơ bản, nhóm làm thêm các lệnh tùy chọn, UART và GPIO, forwarding hai nguồn cùng bypass WB$\to$ID,
+bộ đếm \sig{cycles}, \sig{instret}, Pipeline Monitor, toolchain kiểm thử tự động và bản NH (bảng~\ref{tab:req}).
 
 \section{Hạn chế}
 
 \begin{itemize}
-  \item Truy cập bộ nhớ lệch (ví dụ \texttt{lw} ở địa chỉ không chia hết cho 4) không được hỗ trợ; kết quả không
-        xác định. Golden model báo lỗi trong trường hợp này.
-  \item Không có exception và CSR. ECALL, EBREAK được dùng làm lệnh dừng; FENCE thực thi như NOP.
-  \item Thanh ghi và PC reset về 0; phần mềm phải tự đặt \texttt{sp}.
+  \item Truy cập bộ nhớ lệch (ví dụ \texttt{lw} ở địa chỉ không chia hết cho 4) không được hỗ trợ, kết quả không xác định.
+  \item Không có exception, ngắt và CSR. ECALL, EBREAK được dùng làm lệnh dừng; FENCE thực thi như NOP. UART vì thế
+        phải hỏi vòng thanh ghi trạng thái.
   \item Vùng I/O chỉ giải mã \sig{Addr[31:28]} và \sig{Addr[4:2]}, nên mọi địa chỉ \texttt{0xFxxx\_xxxx} khác là bí
         danh của 8 thanh ghi I/O.
-  \item UART không có ngắt, phần mềm phải hỏi vòng thanh ghi trạng thái; Keyboard chỉ nhận ký tự ASCII 7 bit.
-  \item SB, SH dùng đọc, sửa, ghi thay cho byte enable của RAM. Trong Logisim cách này đúng vì RAM đọc tổ hợp; trên
-        phần cứng thật nó làm đường store dài hơn.
   \item Rẽ nhánh quyết định ở EX nên mỗi lần nhảy mất 2 chu kỳ. Trên 12 chương trình test, flush chiếm
-        $2\times\resTotBR$ chu kỳ, nhiều hơn tổng \resTotLU{} chu kỳ của load-use.
-  \item Logisim không mô phỏng trễ cổng, nên mọi so sánh thời gian trong chương~\ref{ch:result} dựa trên giả định
-        trễ từng tầng, không phải số đo.
+        $2 \times \resTotBR = 2926$ chu kỳ, nhiều hơn tổng \resTotLU{} chu kỳ của load-use.
 \end{itemize}
 
 \section{Hướng phát triển}\label{sec:future}
 
-Các mục nâng cao chưa làm gồm dự đoán nhánh, cache, nhân chia, ngắt và số thực dấu phẩy động. Bảng~\ref{tab:future}
-xếp chúng theo lợi ích có thể đo bằng bộ test hiện có.
+Bảng~\ref{tab:future} xếp các mục nâng cao chưa làm theo lợi ích đo được bằng bộ test hiện có. Cache không có trong bảng
+vì RAM của Logisim trả dữ liệu ngay trong chu kỳ, nên không đo được lợi ích.
 
 \begin{table}[H]
-\centering\small
+\centering\footnotesize
 \caption{Hướng phát triển và cách đo lợi ích}\label{tab:future}
-\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}p{4.8cm}X@{}}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.9cm}>{\raggedright\arraybackslash}p{5.4cm}>{\raggedright\arraybackslash}X@{}}
 \toprule
 Mở rộng & Cách làm & Lợi ích có thể đo \\
 \midrule
 Quyết định rẽ nhánh ở ID & Đưa \sig{BranchUnit} và bộ cộng địa chỉ đích lên ID, thêm forwarding vào ID & Phạt mỗi lần nhảy giảm từ 2 xuống 1 chu kỳ. Trên \file{t09\_recursion.s} tiết kiệm tối đa \resNineBR{} chu kỳ; phải trừ đi các stall mới khi lệnh rẽ nhánh phụ thuộc lệnh ngay trước \\
 Dự đoán nhánh 2 bit và BTB & Bảng nhỏ đánh chỉ số bằng \sig{PC[5:2]}, lưu địa chỉ đích và bộ đếm bão hòa 2 bit & Giảm flush ở vòng lặp (\file{t08\_sort.s}, \file{t09\_recursion.s}); đo bằng số lần \sig{E\_Redirect} \\
 Phần mở rộng M (MUL, DIV) & Thêm Multiplier, Divider của Logisim vào ALU, chọn theo funct7 = 0000001 & \file{t09\_recursion.s} đang nhân bằng vòng lặp dịch và cộng; thay bằng một lệnh \texttt{mul} \\
-Cache & Cache ánh xạ trực tiếp trước \sig{DMEM}, thêm tín hiệu stall khi miss & Cần mô hình độ trễ bộ nhớ chính mới đo được \\
 Ngắt và CSR & Thêm \texttt{mtvec}, \texttt{mepc}, \texttt{mcause} và các lệnh CSR & UART nhận ký tự không cần hỏi vòng \\
 \bottomrule
 \end{tabularx}

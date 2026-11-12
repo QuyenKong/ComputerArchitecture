@@ -8,57 +8,52 @@
 \contentsline {chapter}{\numberline {1}GIỚI THIỆU}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Mục tiêu và yêu cầu}{1}{section.1.1}%
 \contentsline {section}{\numberline {1.2}Đối chiếu yêu cầu với sản phẩm}{1}{section.1.2}%
-\contentsline {section}{\numberline {1.3}Cấu trúc project}{2}{section.1.3}%
-\contentsline {chapter}{\numberline {2}TẬP LỆNH RV32I VÀ KIẾN TRÚC TỔNG THỂ}{4}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Trạng thái kiến trúc và định dạng lệnh}{4}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Sơ đồ khối và các quyết định thiết kế}{4}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Bản đồ bộ nhớ}{5}{section.2.3}%
-\contentsline {chapter}{\numberline {3}THIẾT KẾ CÁC MODULE}{7}{chapter.3}%
-\contentsline {section}{\numberline {3.1}ALU và ALUControl}{7}{section.3.1}%
-\contentsline {section}{\numberline {3.2}RegisterFile}{8}{section.3.2}%
-\contentsline {section}{\numberline {3.3}ImmGen}{8}{section.3.3}%
-\contentsline {section}{\numberline {3.4}Control}{8}{section.3.4}%
-\contentsline {section}{\numberline {3.5}BranchUnit}{9}{section.3.5}%
-\contentsline {section}{\numberline {3.6}LoadUnit, StoreUnit và AddrDecode}{9}{section.3.6}%
-\contentsline {section}{\numberline {3.7}IOController}{10}{section.3.7}%
-\contentsline {section}{\numberline {3.8}PerfCounters}{11}{section.3.8}%
-\contentsline {chapter}{\numberline {4}CPU ĐƠN CHU KỲ}{12}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Datapath}{12}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Ví dụ: lệnh \texttt {lw t4, 8(sp)}}{13}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Đường găng và giới hạn của thiết kế đơn chu kỳ}{13}{section.4.3}%
-\contentsline {chapter}{\numberline {5}CPU PIPELINE 5 TẦNG VÀ XỬ LÝ HAZARD}{14}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Chia datapath thành năm tầng}{14}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Thanh ghi pipeline}{14}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Ba loại hazard}{15}{section.5.3}%
-\contentsline {subsection}{\numberline {5.3.1}Forwarding và bypass WB$\to $ID}{15}{subsection.5.3.1}%
-\contentsline {subsection}{\numberline {5.3.2}Load-use: stall một chu kỳ}{16}{subsection.5.3.2}%
-\contentsline {subsection}{\numberline {5.3.3}Control hazard: dự đoán không nhảy và flush}{16}{subsection.5.3.3}%
-\contentsline {subsection}{\numberline {5.3.4}Số chu kỳ}{16}{subsection.5.3.4}%
-\contentsline {section}{\numberline {5.4}Bản NoHazard và cách chèn NOP}{17}{section.5.4}%
-\contentsline {chapter}{\numberline {6}KIỂM THỬ}{19}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Toolchain}{19}{section.6.1}%
-\contentsline {subsection}{\numberline {6.1.1}Assembler \texttt {tools/rvasm.py}}{19}{subsection.6.1.1}%
-\contentsline {subsection}{\numberline {6.1.2}Golden model \texttt {tools/rvsim.py}}{19}{subsection.6.1.2}%
-\contentsline {subsection}{\numberline {6.1.3}Bộ chạy test \texttt {tools/run\_tests.py}}{19}{subsection.6.1.3}%
-\contentsline {section}{\numberline {6.2}Test vector từng module}{20}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Chương trình test toàn CPU}{21}{section.6.3}%
-\contentsline {section}{\numberline {6.4}Kết quả}{21}{section.6.4}%
-\contentsline {chapter}{\numberline {7}KẾT QUẢ VÀ ĐÁNH GIÁ}{22}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Số chu kỳ của ba phiên bản}{22}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Thời gian thực thi theo giả định trễ}{23}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Một lần chạy cụ thể}{24}{section.7.3}%
-\contentsline {chapter}{\numberline {8}PHẦN MỞ RỘNG, HẠN CHẾ VÀ HƯỚNG PHÁT TRIỂN}{25}{chapter.8}%
-\contentsline {section}{\numberline {8.1}Phần mở rộng đã làm}{25}{section.8.1}%
-\contentsline {section}{\numberline {8.2}Hạn chế}{25}{section.8.2}%
-\contentsline {section}{\numberline {8.3}Hướng phát triển}{26}{section.8.3}%
-\contentsline {chapter}{TÀI LIỆU THAM KHẢO}{27}{section*.28}%
-\contentsline {chapter}{PHỤ LỤC}{29}{section*.30}%
+\contentsline {chapter}{\numberline {2}TẬP LỆNH RV32I VÀ KIẾN TRÚC TỔNG THỂ}{3}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Trạng thái kiến trúc và định dạng lệnh}{3}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Sơ đồ khối và các quyết định thiết kế}{3}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Bản đồ bộ nhớ}{4}{section.2.3}%
+\contentsline {chapter}{\numberline {3}THIẾT KẾ CÁC MODULE}{5}{chapter.3}%
+\contentsline {section}{\numberline {3.1}ALU và ALUControl}{5}{section.3.1}%
+\contentsline {section}{\numberline {3.2}RegisterFile}{6}{section.3.2}%
+\contentsline {section}{\numberline {3.3}ImmGen}{6}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Control}{6}{section.3.4}%
+\contentsline {section}{\numberline {3.5}BranchUnit}{7}{section.3.5}%
+\contentsline {section}{\numberline {3.6}LoadUnit, StoreUnit và AddrDecode}{7}{section.3.6}%
+\contentsline {section}{\numberline {3.7}IOController}{8}{section.3.7}%
+\contentsline {section}{\numberline {3.8}PerfCounters}{8}{section.3.8}%
+\contentsline {chapter}{\numberline {4}CPU ĐƠN CHU KỲ}{9}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Datapath}{9}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Ví dụ: lệnh \texttt {lw t4, 8(sp)}}{10}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Đường găng và giới hạn của thiết kế đơn chu kỳ}{10}{section.4.3}%
+\contentsline {chapter}{\numberline {5}CPU PIPELINE 5 TẦNG VÀ XỬ LÝ HAZARD}{11}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Chia datapath thành năm tầng}{11}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Thanh ghi pipeline}{11}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Ba loại hazard}{12}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Forwarding và bypass WB$\to $ID}{12}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Load-use: stall một chu kỳ}{13}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}Control hazard: dự đoán không nhảy và flush}{13}{subsection.5.3.3}%
+\contentsline {section}{\numberline {5.4}Bản NoHazard và cách chèn NOP}{13}{section.5.4}%
+\contentsline {chapter}{\numberline {6}KIỂM THỬ}{15}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Toolchain}{15}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Test vector từng module}{15}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Chương trình test toàn CPU}{16}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Kết quả}{16}{section.6.4}%
+\contentsline {chapter}{\numberline {7}KẾT QUẢ VÀ ĐÁNH GIÁ}{18}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Số chu kỳ của ba phiên bản}{18}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Thời gian thực thi theo giả định trễ}{19}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Một lần chạy cụ thể}{19}{section.7.3}%
+\contentsline {chapter}{\numberline {8}PHẦN MỞ RỘNG, HẠN CHẾ VÀ HƯỚNG PHÁT TRIỂN}{20}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Phần mở rộng đã làm}{20}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Hạn chế}{20}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Hướng phát triển}{20}{section.8.3}%
+\contentsline {chapter}{TÀI LIỆU THAM KHẢO}{21}{section*.24}%
+\contentsline {chapter}{PHỤ LỤC}{23}{section*.26}%
 \ttl@change@i {\@ne }{chapter}{0.0cm}{\bfseries \vspace {0.3cm}}{{\bfseries {\scshape } \thecontentslabel .\ }}{}{\titlerule *[0.3pc]{.}\contentspage }\relax 
 \ttl@change@v {chapter}{}{}{}\relax 
-\contentsline {chapter}{\numberline {A}HƯỚNG DẪN SỬ DỤNG PROJECT}{29}{appendix.1.A}%
-\contentsline {section}{\numberline {A.1}Mở project và chạy mô phỏng}{29}{section.1.A.1}%
-\contentsline {section}{\numberline {A.2}Nạp chương trình mới}{29}{section.1.A.2}%
-\contentsline {section}{\numberline {A.3}Chạy test}{29}{section.1.A.3}%
-\contentsline {section}{\numberline {A.4}Dựng lại báo cáo}{30}{section.1.A.4}%
-\contentsline {section}{\numberline {A.5}Kịch bản demo}{30}{section.1.A.5}%
+\contentsline {chapter}{\numberline {A}HƯỚNG DẪN SỬ DỤNG PROJECT}{23}{appendix.1.A}%
+\contentsline {section}{\numberline {A.1}Mở project và chạy mô phỏng}{23}{section.1.A.1}%
+\contentsline {section}{\numberline {A.2}Nạp chương trình mới}{23}{section.1.A.2}%
+\contentsline {section}{\numberline {A.3}Chạy test}{23}{section.1.A.3}%
+\contentsline {section}{\numberline {A.4}Dựng lại báo cáo}{24}{section.1.A.4}%
+\contentsline {section}{\numberline {A.5}Kịch bản demo}{24}{section.1.A.5}%
 \contentsfinish 
