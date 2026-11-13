@@ -272,6 +272,49 @@ def table(slide, x, y, w, rows, col_w, size=12, header_fill=RED, row_h=0.3, fill
     return tbl
 
 
+def add_click_sequence(slide, clicks):
+    """Hiệu ứng Appear theo click: clicks[k] là danh sách shape cùng hiện ở lần click thứ k+1."""
+    P = "http://schemas.openxmlformats.org/presentationml/2006/main"
+    ids = iter(range(1, 10000))
+    groups = []
+    for shapes in clicks:
+        effs = []
+        for j, shp in enumerate(shapes):
+            effs.append(
+                f'<p:par><p:cTn id="{next(ids)}" presetID="1" presetClass="entr" presetSubtype="0" fill="hold" '
+                f'grpId="0" nodeType="{"clickEffect" if j == 0 else "withEffect"}">'
+                '<p:stCondLst><p:cond delay="0"/></p:stCondLst><p:childTnLst><p:set><p:cBhvr>'
+                f'<p:cTn id="{next(ids)}" dur="1" fill="hold"><p:stCondLst><p:cond delay="0"/></p:stCondLst></p:cTn>'
+                f'<p:tgtEl><p:spTgt spid="{shp.shape_id}"/></p:tgtEl>'
+                '<p:attrNameLst><p:attrName>style.visibility</p:attrName></p:attrNameLst></p:cBhvr>'
+                '<p:to><p:strVal val="visible"/></p:to></p:set></p:childTnLst></p:cTn></p:par>')
+        groups.append(
+            f'<p:par><p:cTn id="{next(ids)}" fill="hold"><p:stCondLst><p:cond delay="indefinite"/></p:stCondLst>'
+            f'<p:childTnLst><p:par><p:cTn id="{next(ids)}" fill="hold"><p:stCondLst><p:cond delay="0"/>'
+            f'</p:stCondLst><p:childTnLst>{"".join(effs)}</p:childTnLst></p:cTn></p:par></p:childTnLst></p:cTn>'
+            '</p:par>')
+    # id 1, 2 dành cho tmRoot và mainSeq: đánh lại id theo thứ tự xuất hiện
+    body = "".join(groups)
+    n = iter(range(3, 10000))
+    body = re.sub(r'<p:cTn id="\d+"', lambda m: f'<p:cTn id="{next(n)}"', body)
+    bld = "".join(f'<p:bldP spid="{shp.shape_id}" grpId="0"/>'
+                  for shapes in clicks for shp in shapes if shp.shape_type != 13)  # 13 = PICTURE
+    xml = (f'<p:timing xmlns:p="{P}"><p:tnLst><p:par>'
+           '<p:cTn id="1" dur="indefinite" restart="never" nodeType="tmRoot"><p:childTnLst>'
+           '<p:seq concurrent="1" nextAc="seek"><p:cTn id="2" dur="indefinite" nodeType="mainSeq">'
+           f'<p:childTnLst>{body}</p:childTnLst></p:cTn>'
+           '<p:prevCondLst><p:cond evt="onPrev" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:prevCondLst>'
+           '<p:nextCondLst><p:cond evt="onNext" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:nextCondLst>'
+           f'</p:seq></p:childTnLst></p:cTn></p:par></p:tnLst><p:bldLst>{bld}</p:bldLst></p:timing>')
+    sld = slide._element
+    ext = sld.find(qn("p:extLst"))
+    timing = etree.fromstring(xml)
+    if ext is not None:
+        ext.addprevious(timing)
+    else:
+        sld.append(timing)
+
+
 def content_slide(title):
     s = prs.slides.add_slide(L_CONTENT)
     strip_placeholders(s)
@@ -485,14 +528,7 @@ divider_slide("PHẦN 1", "THIẾT KẾ CÁC MODULE", "Bùi Phạm Sơn Hà", [
 
 # ================================================================ S6 18 circuit con
 s = content_slide("18 circuit con và test vector")
-
-
-def vec(name):
-    v = VEC.get(name)
-    return ("vector " + (v[1] if v[0] in ("--", "–") else v[0])) if v else "không có vector riêng"
-
-
-mods = [("Control", "opcode → mọi tín hiệu điều khiển", TINT_RED),
+mods =[("Control", "opcode → mọi tín hiệu điều khiển", TINT_RED),
         ("ImmGen", "ghép immediate I, S, B, U, J", TINT_RED),
         ("ALUControl", "ALUOp, funct3, bit 30 → ALUCtrl", TINT_RED),
         ("RegisterFile", "x1–x31, 2 cổng đọc, 1 cổng ghi", TINT_ORG),
@@ -511,12 +547,10 @@ for i, (name, role, fill) in enumerate(mods):
     x, y = 0.55 + (i % 5) * 2.46, 0.95 + (i // 5) * 1.6
     box(s, x, y, 2.34, 1.48, fill)
     col = WHITE if fill == RED else DARK
-    vtxt = vec(name.split(",")[0]) if not name.startswith("IF_ID") else "không có vector riêng"
     text(s, x + 0.1, y + 0.06, 2.16, 1.38, [
         {"runs": [B(name, color=WHITE if fill == RED else RED)], "size": 14 if len(name) < 20 else 12,
          "space_after": 3},
-        {"runs": [R(role)], "size": 13, "space_after": 3},
-        {"runs": [R(vtxt, color=WHITE if fill == RED else MUTED)], "size": 12},
+        {"runs": [R(role)], "size": 13},
     ], color=col)
 legend = [("Giải mã", TINT_RED), ("Thực thi", TINT_ORG), ("Bộ nhớ, I/O, bộ đếm", TINT_GRAY), ("Chỉ có ở PL", RED)]
 for i, (lbl, c) in enumerate(legend):
@@ -632,16 +666,35 @@ divider_slide("PHẦN 2", "CPU ĐƠN CHU KỲ VÀ KIỂM THỬ", "Quyền Đức
 
 # ================================================================ S12 datapath SC
 s = content_slide("Datapath đơn chu kỳ")
-picture(s, DIMG / "RV32I_SingleCycle.png", 0.55, 0.95, 8.4, 5.35)
-steps = [("IF", "PC → IMEM (PC[11:2]) ra instr; bộ cộng PC + 4"),
-         ("ID", "Control sinh tín hiệu; RegisterFile đọc rs1, rs2; ImmGen"),
-         ("EX", "ALU: A = rs1/PC/0, B = rs2/imm; BranchUnit so sánh"),
-         ("MEM", "StoreUnit ghép dữ liệu; RAM ghi ở cạnh lên; LoadUnit"),
-         ("WB", "WBSel: ALU, dữ liệu load hoặc PC + 4 → x[rd]")]
-for i, (st, desc) in enumerate(steps):
-    y = 0.95 + i * 1.07
-    circle_num(s, 9.2, y + 0.1, 0.7, st, RED, 14 if len(st) < 3 else 12)
-    text(s, 10.0, y, 2.85, 1.0, [desc], size=14, anchor=MSO_ANCHOR.MIDDLE)
+# Ảnh top-level cắt thành 5 khung cùng kích thước (px trên RV32I_SingleCycle.png), mỗi khung ôm cụm khối của một tầng.
+# Năm ảnh đặt chồng cùng một chỗ; mỗi click hiện ảnh của tầng kế tiếp (đè lên ảnh trước) cùng lời giải thích.
+SC_CROP_W, SC_CROP_H = 620, 940
+steps = [("IF", "Nạp lệnh", "PC → IMEM (PC[11:2]) ra instr; song song bộ cộng tính PC + 4", (90, 130)),
+         ("ID", "Giải mã, đọc thanh ghi", "Control sinh tín hiệu điều khiển; RegisterFile đọc rs1, rs2; "
+                                         "ImmGen tạo immediate", (670, 130)),
+         ("EX", "Thực thi", "ALU: A = rs1, PC hoặc 0; B = rs2 hoặc imm. BranchUnit so sánh rs1, rs2",
+          (1240, 130)),
+         ("MEM", "Truy cập bộ nhớ", "StoreUnit ghép dữ liệu ghi; RAM ghi ở cạnh lên clock; LoadUnit tách dữ liệu đọc",
+          (1680, 290)),
+         ("WB", "Ghi lại", "MUX WBSel chọn kết quả ALU, dữ liệu load hoặc PC + 4 → x[rd]", (2200, 290))]
+from PIL import Image  # noqa: E402
+sc_full = Image.open(DIMG / "RV32I_SingleCycle.png").convert("RGB")
+pic_h = 5.6
+pic_w = pic_h * SC_CROP_W / SC_CROP_H
+clicks = []
+for i, (st, name, desc, (cx, cy)) in enumerate(steps):
+    crop = SIMG / f"SC_{st}.png"
+    sc_full.crop((cx, cy, cx + SC_CROP_W, cy + SC_CROP_H)).save(crop)
+    pic = picture(s, crop, 0.55, 0.95, pic_w, pic_h)
+    y = 0.95 + i * 1.13
+    c = circle_num(s, pic_w + 0.95, y + 0.14, 0.75, st, RED, 15 if len(st) < 3 else 13)
+    # mép phải 10.3": tránh họa tiết sóng của template ở góc phải dưới
+    t = text(s, pic_w + 1.9, y, 10.3 - pic_w - 1.9, 1.05, [
+        {"runs": [B(name, color=RED)], "size": 17, "space_after": 2},
+        {"runs": [R(desc.replace("PC + 4", "PC\u00a0+\u00a04"))], "size": 15},  # không ngắt dòng giữa "PC + 4"
+    ], anchor=MSO_ANCHOR.MIDDLE)
+    clicks.append([pic, c, t])
+add_click_sequence(s, clicks)
 
 # ================================================================ S13 ví dụ lw
 s = content_slide("Ví dụ: lw t4, 8(sp) trong một chu kỳ")

@@ -72,7 +72,7 @@ Người nói: Hà · 4:25–5:25
 RegisterFile, ALU, BranchUnit. Màu xám là bộ nhớ, vào ra và bộ đếm. Các ô đỏ đậm là 7 circuit chỉ có ở pipeline:
 ForwardUnit, HazardUnit, IDBypass và 4 thanh ghi pipeline; phần đó Đức Anh sẽ trình bày.
 
-Dòng nhỏ dưới mỗi ô là kết quả test vector, ví dụ ALU đạt 250 trên 250. Có 13 circuit có file test vector: tổng
+Dòng cuối slide là kết quả test vector. Có 13 circuit có file test vector: tổng
 {vecSC} trên bản đơn chu kỳ và {vecPL} trên bản pipeline. Giá trị mong đợi sinh từ mô hình Python, chạy bằng tùy chọn
 -w của Logisim. PerfCounters và 4 thanh ghi pipeline không có vector riêng; chúng được kiểm tra qua các chương trình
 chạy trên toàn CPU.
@@ -145,10 +145,11 @@ Người nói: Công · 0:15–2:00
 Đây là mạch top-level của CPU đơn chu kỳ. Toàn bộ đường từ thanh ghi PC qua các module tới register file và RAM là
 mạch tổ hợp. Ở mỗi cạnh lên clock, PC, thanh ghi đích và RAM cập nhật cùng lúc, nên mỗi lệnh xong trong một chu kỳ.
 
-Một lệnh đi qua năm bước như cột bên phải. IF: PC vào IMEM lấy lệnh, song song bộ cộng tính PC + 4. ID: Control sinh
-tín hiệu, RegisterFile đọc rs1, rs2, ImmGen tạo immediate. EX: đầu vào A của ALU là rs1, PC hoặc 0, đầu vào B là rs2
-hoặc immediate; BranchUnit so sánh. MEM: StoreUnit ghép dữ liệu ghi, LoadUnit tách dữ liệu đọc. WB: MUX WBSel chọn
-kết quả ALU, dữ liệu load hoặc PC + 4 để ghi vào rd. Ở bản này năm bước xảy ra trong cùng một chu kỳ.
+Một lệnh đi qua năm bước; mỗi lần bấm, slide hiện phần mạch của bước đó. [Click 1] IF: PC vào IMEM lấy lệnh, song
+song bộ cộng tính PC + 4. [Click 2] ID: Control sinh tín hiệu, RegisterFile đọc rs1, rs2, ImmGen tạo immediate.
+[Click 3] EX: đầu vào A của ALU là rs1, PC hoặc 0, đầu vào B là rs2 hoặc immediate; BranchUnit so sánh. [Click 4] MEM:
+StoreUnit ghép dữ liệu ghi, LoadUnit tách dữ liệu đọc. [Click 5] WB: MUX WBSel chọn kết quả ALU, dữ liệu load hoặc
+PC + 4 để ghi vào rd. Ở bản này năm bước xảy ra trong cùng một chu kỳ.
 
 [DEMO] Mở RV32I_SingleCycle.circ, bấm Ctrl+K. demo.s đã nạp sẵn trong ROM. Chỉ RegisterFile, TTY in Hello RISC-V!,
 LED 7 đoạn hiện 00E8 là tổng 12 số Fibonacci, 8 LED sáng.
