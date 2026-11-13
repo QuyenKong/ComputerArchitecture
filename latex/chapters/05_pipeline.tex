@@ -9,14 +9,14 @@ với thời gian của thanh ghi pipeline. Với giả định trễ ở mục~
 chu kỳ pipeline là $\max(200, 100, 200, 200, 100) + 20 = \resTPipe$~ps, so với \resTSingle~ps của bản đơn chu kỳ.
 Nếu mọi lệnh đều có CPI bằng 1, tăng tốc lý tưởng là $\resTSingle/\resTPipe \approx \resIdealSpeedup$ lần.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \includegraphics[width=\textwidth]{RV32I_Pipeline.png}
 \caption{Mạch top-level của CPU pipeline. Pipeline Monitor ở góc dưới hiển thị PC và lệnh ở từng tầng cùng các
 tín hiệu \sig{Stall}, \sig{LoadUse}, \sig{E\_Redirect}, \sig{FwdA}, \sig{FwdB}}\label{fig:pl}
 \end{figure}
 
-\section{Thanh ghi pipeline}
+\section{Thanh ghi pipeline}\label{sec:pregs}
 
 Mỗi thanh ghi pipeline giữ mọi thứ các tầng sau cần về một lệnh: dữ liệu, số hiệu thanh ghi và các tín hiệu điều
 khiển. Tín hiệu điều khiển được sinh một lần ở ID rồi đi theo lệnh qua từng tầng. Mỗi trường gồm một MUX
@@ -24,7 +24,7 @@ khiển. Tín hiệu điều khiển được sinh một lần ở ID rồi đi 
 (stall). Khi \sig{FLUSH} = 1 thanh ghi nạp toàn 0; do lệnh 0 có mọi tín hiệu điều khiển bằng 0, lệnh đó thành
 bubble và không ghi gì. Flush được làm đồng bộ qua MUX vì chân Clear của Register trong Logisim là bất đồng bộ.
 
-\begin{table}[H]
+\begin{table}[!htb]
 \centering\small
 \caption{Các trường của thanh ghi pipeline}\label{tab:pregs}
 \begin{tabularx}{\textwidth}{@{}lX@{}}
@@ -41,16 +41,24 @@ MEM/WB & valid, pc, instr, exres, mdata, rd, RegWrite, MemToReg, Halt \\
 
 Trường \sig{exres} là PC + 4 với JAL/JALR và kết quả ALU với các lệnh khác. Nó vừa là địa chỉ bộ nhớ, vừa là
 giá trị để forward, vừa là giá trị ghi lại, nên từ tầng MEM trở đi chỉ cần MUX 2:1 theo \sig{MemToReg}. Trường
-\sig{valid} bằng 0 với bubble và dùng cho bộ đếm \sig{instret}. Các trường \sig{pc}, \sig{instr} ở mọi tầng chỉ
-để hiển thị trên Pipeline Monitor.
+\sig{valid} bằng 0 với bubble và dùng cho bộ đếm \sig{instret}.
 
-\section{Ba loại hazard}
+Trường \sig{instr} của IF/ID là đầu vào của \sig{Control}, \sig{ImmGen} và \sig{ALUControl}, đồng thời cho ra
+rs1, rs2, rd và funct3. Trường \sig{pc} của ID/EX là đầu vào PC của MUX \sig{ASel}, dùng cho BRANCH, JAL và AUIPC;
+trường \sig{pc4} của ID/EX là đầu vào của MUX chọn \sig{exres} khi lệnh là JAL hoặc JALR. Trường \sig{instr} của
+ID/EX và các trường \sig{pc}, \sig{instr} của EX/MEM, MEM/WB chỉ để hiển thị trên Pipeline Monitor.
 
-Structural hazard không xảy ra vì bộ nhớ lệnh và bộ nhớ dữ liệu tách riêng, register file có hai cổng đọc và một
-cổng ghi. Data hazard xảy ra khi một lệnh cần kết quả của lệnh trước mà lệnh đó chưa ghi vào register file.
-Control hazard xảy ra vì pipeline đã nạp tiếp hai lệnh sau một lệnh nhảy trước khi biết lệnh đó có nhảy hay không.
+\section{Hazard và cách xử lý}
 
-\subsection{\texorpdfstring{Forwarding và bypass WB$\to$ID}{Forwarding và bypass WB-ID}}\label{sec:fwd}
+Pipeline có ba loại hazard. Structural hazard xảy ra khi hai lệnh cần cùng một tài nguyên trong một chu kỳ. Thiết
+kế này không gặp loại hazard đó vì bộ nhớ lệnh và bộ nhớ dữ liệu tách riêng, register file có hai cổng đọc và một
+cổng ghi. Data hazard xảy ra khi một lệnh cần kết quả của lệnh trước mà lệnh đó chưa ghi vào register file. PL xử
+lý bằng forwarding và bypass WB$\to$ID (mục~\ref{sec:fwd}); riêng trường hợp load-use thì phải stall một chu kỳ
+(mục~\ref{sec:loaduse}). Control hazard xảy ra vì pipeline đã nạp tiếp hai lệnh sau một lệnh nhảy trước khi biết
+lệnh đó có nhảy hay không. PL dự đoán không nhảy và flush khi đoán sai (mục~\ref{sec:ctrlhaz}).
+Mục~\ref{sec:hzeq} gom các phương trình của \sig{HazardUnit} và công thức số chu kỳ.
+
+\subsection{\texorpdfstring{Data hazard: forwarding và bypass WB$\to$ID}{Data hazard: forwarding và bypass WB-ID}}\label{sec:fwd}
 
 Kết quả của một lệnh ALU đã có ở cuối tầng EX, chỉ chưa được ghi vào register file. \sig{ForwardUnit} so sánh
 rs1, rs2 của lệnh ở EX với rd của lệnh ở MEM và WB. \sig{FwdA} = 01 (lấy từ EX/MEM) khi EX/MEM.RegWrite = 1,
@@ -67,7 +75,7 @@ ngay trong chu kỳ đó và nhận giá trị cũ. \sig{IDBypass} đặt sau c�
 W\_rd $\neq$ 0 và W\_rd trùng rs thì đưa thẳng W\_data vào ID. Cách này tương đương với quy ước ghi nửa đầu, đọc
 nửa sau chu kỳ trong sách \cite[ch.~4]{patterson}, và giữ \sig{RegisterFile} dùng được cho CPU đơn chu kỳ.
 
-\subsection{Load-use: stall một chu kỳ}
+\subsection{Data hazard: load-use, stall một chu kỳ}\label{sec:loaduse}
 
 Dữ liệu của lệnh load chỉ có ở cuối tầng MEM, còn lệnh ngay sau cần nó ở đầu tầng EX trong cùng chu kỳ, nên
 forwarding không đủ. \sig{HazardUnit} phát hiện trường hợp này:
@@ -80,20 +88,22 @@ forwarding không đủ. \sig{HazardUnit} phát hiện trường hợp này:
 Khi \sig{LoadUse} = 1, \sig{PCWrite} = 0 và \sig{IFID\_Write} = 0 giữ nguyên PC và IF/ID, còn \sig{IDEX\_Flush} = 1
 chèn một bubble vào EX. Chu kỳ sau, lệnh phụ thuộc lên EX và nhận dữ liệu load qua forwarding từ MEM/WB.
 
-\subsection{Control hazard: dự đoán không nhảy và flush}
+\subsection{Control hazard: dự đoán không nhảy và flush}\label{sec:ctrlhaz}
 
 PL luôn nạp PC + 4. Lệnh rẽ nhánh và nhảy được quyết định ở EX: \sig{E\_Redirect} = \sig{Taken} $\lor$ \sig{Jal}
 $\lor$ \sig{Jalr}. Khi \sig{E\_Redirect} = 1, PC nhận địa chỉ đích và hai lệnh nạp sai ở IF/ID và ID/EX bị flush,
 mất 2 chu kỳ. Nếu cùng chu kỳ có cả stall và redirect thì redirect thắng, vì lệnh đang bị stall nằm trên nhánh sai.
-Các phương trình của \sig{HazardUnit} là:
 
-\[
+\subsection{Phương trình của HazardUnit và số chu kỳ}\label{sec:hzeq}
+
+\sig{HazardUnit} gộp ba nguồn điều khiển: load-use (mục~\ref{sec:loaduse}), redirect (mục~\ref{sec:ctrlhaz}) và
+lệnh EBREAK đang ở ID. Các phương trình là:
+
+\begin{gather*}
 \mathit{Stall} = \mathit{LoadUse} \lor \mathit{D\_Halt},\quad
-\mathit{PCWrite} = \mathit{IFID\_Write} = \lnot\mathit{Stall} \lor \mathit{Redirect},
-\]
-\[
+\mathit{PCWrite} = \mathit{IFID\_Write} = \lnot\mathit{Stall} \lor \mathit{Redirect}, \\
 \mathit{IFID\_Flush} = \mathit{Redirect},\quad \mathit{IDEX\_Flush} = \mathit{Redirect} \lor \mathit{LoadUse}.
-\]
+\end{gather*}
 
 EBREAK ở ID làm \sig{Stall} = 1 để ngừng nạp lệnh mới. Chân \sig{halt} lấy từ trường \sig{Halt} của MEM/WB, nên
 CPU chỉ dừng khi EBREAK tới WB, lúc mọi lệnh trước đó đã ghi xong.
@@ -109,15 +119,22 @@ forwarding nối hằng 0, và đầu vào \sig{E\_MemRead} của \sig{HazardUni
 \sig{IDBypass} vẫn giữ. Chạy chương trình bình thường trên bản này thì sai: cả 12 chương trình test đều FAIL
 (mục~\ref{sec:testres}).
 
-Để bản NH chạy đúng, assembler có chế độ \texttt{--nohazard} chèn \texttt{nop} theo hai quy tắc. Lệnh đọc rd của
+Để bản NH chạy đúng, assembler có chế độ \texttt{-{}-nohazard} chèn \texttt{nop} theo hai quy tắc. Lệnh đọc rd của
 lệnh ngay trước được chèn 2 \texttt{nop}; lệnh đọc rd của lệnh trước đó 2 vị trí được chèn 1 \texttt{nop}. Sau đó
-khoảng cách giữa hai lệnh là 3 và \sig{IDBypass} lo phần còn lại. Bộ đếm khoảng cách được đặt lại sau
-\texttt{jal} và \texttt{jalr}, vì lệnh đích chỉ đến được qua một lần nhảy và mỗi lần nhảy đã flush 2 chu kỳ.
+khoảng cách giữa hai lệnh là 3 và \sig{IDBypass} lo phần còn lại.
+
+Bộ đếm khoảng cách chạy theo thứ tự chương trình và chỉ được đặt lại ngay sau \texttt{jal} và \texttt{jalr}. Lệnh
+tới bằng một lần nhảy luôn có 2 bubble do flush phía trước, nên mọi lệnh trước lần nhảy đã cách nó ít nhất 3 vị
+trí. Lệnh ngay sau \texttt{jal}, \texttt{jalr} chỉ tới được bằng nhảy, thường là điểm trở về của \texttt{ret}, nên
+đặt lại ở đó là an toàn. Nhãn và lệnh ngay sau một lệnh rẽ nhánh có điều kiện thì không được đặt lại, vì chúng còn
+tới được bằng cách chạy tiếp từ lệnh liền trước mà không có bubble nào. Ví dụ \texttt{addi t0, x0, 1} đứng ngay
+trước nhãn \texttt{L: add t1, t0, t0} vẫn cần 2 \texttt{nop}. Phép quét tuyến tính đã xử lý đúng đường chạy tiếp
+này, còn đường tới bằng nhảy luôn dư ít nhất 2 chu kỳ.
 
 Bảng~\ref{tab:diag} so sánh cùng bảy lệnh của \file{t06\_hazard.s} trên hai bản. Ô màu đỏ là chu kỳ lệnh bị stall
 ở ID; bảng sinh tự động từ golden model.
 
-\begin{table}[H]
+\begin{table}[!htb]
 \centering\scriptsize
 \caption{Giản đồ pipeline của 7 lệnh trong \file{t06\_hazard.s}}\label{tab:diag}
 \setlength{\tabcolsep}{1.6pt}

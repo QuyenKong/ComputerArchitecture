@@ -16,7 +16,7 @@
 \contentsline {section}{\numberline {3.1}ALU và ALUControl}{5}{section.3.1}%
 \contentsline {section}{\numberline {3.2}RegisterFile}{6}{section.3.2}%
 \contentsline {section}{\numberline {3.3}ImmGen}{6}{section.3.3}%
-\contentsline {section}{\numberline {3.4}Control}{6}{section.3.4}%
+\contentsline {section}{\numberline {3.4}Control}{7}{section.3.4}%
 \contentsline {section}{\numberline {3.5}BranchUnit}{7}{section.3.5}%
 \contentsline {section}{\numberline {3.6}LoadUnit, StoreUnit và AddrDecode}{7}{section.3.6}%
 \contentsline {section}{\numberline {3.7}IOController}{8}{section.3.7}%
@@ -28,26 +28,25 @@
 \contentsline {chapter}{\numberline {5}CPU PIPELINE 5 TẦNG VÀ XỬ LÝ HAZARD}{11}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Chia datapath thành năm tầng}{11}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Thanh ghi pipeline}{11}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Ba loại hazard}{12}{section.5.3}%
-\contentsline {subsection}{\numberline {5.3.1}Forwarding và bypass WB$\to $ID}{12}{subsection.5.3.1}%
-\contentsline {subsection}{\numberline {5.3.2}Load-use: stall một chu kỳ}{13}{subsection.5.3.2}%
+\contentsline {section}{\numberline {5.3}Hazard và cách xử lý}{12}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Data hazard: forwarding và bypass WB$\to $ID}{12}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Data hazard: load-use, stall một chu kỳ}{13}{subsection.5.3.2}%
 \contentsline {subsection}{\numberline {5.3.3}Control hazard: dự đoán không nhảy và flush}{13}{subsection.5.3.3}%
-\contentsline {section}{\numberline {5.4}Bản NoHazard và cách chèn NOP}{13}{section.5.4}%
-\contentsline {chapter}{\numberline {6}KIỂM THỬ}{15}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Toolchain}{15}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Test vector từng module}{15}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Chương trình test toàn CPU}{16}{section.6.3}%
-\contentsline {section}{\numberline {6.4}Kết quả}{16}{section.6.4}%
-\contentsline {chapter}{\numberline {7}KẾT QUẢ VÀ ĐÁNH GIÁ}{18}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Số chu kỳ của ba phiên bản}{18}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Thời gian thực thi theo giả định trễ}{19}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Một lần chạy cụ thể}{19}{section.7.3}%
-\contentsline {chapter}{\numberline {8}PHẦN MỞ RỘNG, HẠN CHẾ VÀ HƯỚNG PHÁT TRIỂN}{20}{chapter.8}%
-\contentsline {section}{\numberline {8.1}Phần mở rộng đã làm}{20}{section.8.1}%
-\contentsline {section}{\numberline {8.2}Hạn chế}{20}{section.8.2}%
-\contentsline {section}{\numberline {8.3}Hướng phát triển}{20}{section.8.3}%
-\contentsline {chapter}{TÀI LIỆU THAM KHẢO}{21}{section*.24}%
-\contentsline {chapter}{PHỤ LỤC}{23}{section*.26}%
+\contentsline {subsection}{\numberline {5.3.4}Phương trình của HazardUnit và số chu kỳ}{13}{subsection.5.3.4}%
+\contentsline {section}{\numberline {5.4}Bản NoHazard và cách chèn NOP}{14}{section.5.4}%
+\contentsline {chapter}{\numberline {6}KIỂM THỬ VÀ ĐÁNH GIÁ KẾT QUẢ}{16}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Toolchain}{16}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Test vector từng module}{16}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Chương trình test toàn CPU}{17}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Kết quả kiểm thử}{17}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Số chu kỳ của ba phiên bản}{18}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Thời gian thực thi theo giả định trễ}{19}{section.6.6}%
+\contentsline {chapter}{\numberline {7}PHẦN MỞ RỘNG, HẠN CHẾ VÀ HƯỚNG PHÁT TRIỂN}{20}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Phần mở rộng đã làm}{20}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Hạn chế}{20}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Hướng phát triển}{20}{section.7.3}%
+\contentsline {chapter}{TÀI LIỆU THAM KHẢO}{21}{section*.25}%
+\contentsline {chapter}{PHỤ LỤC}{23}{section*.27}%
 \ttl@change@i {\@ne }{chapter}{0.0cm}{\bfseries \vspace {0.3cm}}{{\bfseries {\scshape } \thecontentslabel .\ }}{}{\titlerule *[0.3pc]{.}\contentspage }\relax 
 \ttl@change@v {chapter}{}{}{}\relax 
 \contentsline {chapter}{\numberline {A}HƯỚNG DẪN SỬ DỤNG PROJECT}{23}{appendix.1.A}%

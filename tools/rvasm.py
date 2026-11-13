@@ -40,7 +40,7 @@ BRANCHES = {'beq': 0, 'bne': 1, 'blt': 4, 'bge': 5, 'bltu': 6, 'bgeu': 7}
 
 TEXT_BASE, DATA_BASE = 0x0, 0x0
 IMEM_WORDS, DMEM_BYTES = 1024, 16384
-DUMP_BASE = 0x700   # test harness: registers x0..x31 are stored at 0x700..0x77C
+DUMP_BASE = 0x700   # test harness: registers x1..x31 are stored at 0x704..0x77C (slot 0x700 = x0 stays empty)
 
 
 class AsmError(Exception):

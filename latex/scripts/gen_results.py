@@ -59,6 +59,7 @@ def write_tables(rows):
     # các con số dùng trong văn bản
     t09 = next(r for r in rows if r['name'] == 't09_recursion.s')
     demo = next(r for r in rows if r['name'] == 'demo.s')
+    top = max(rows, key=lambda r: r['pl'] / r['n'])          # chương trình có CPI (PL) cao nhất
     macros = {
         'TotN': tot['n'], 'TotSC': tot['sc'], 'TotNH': tot['nh'], 'TotNOP': tot['nop'], 'TotPL': tot['pl'],
         'TotLU': tot['lu'], 'TotBR': tot['br'],
@@ -66,6 +67,8 @@ def write_tables(rows):
         'NineN': t09['n'], 'NinePL': t09['pl'], 'NineNH': t09['nh'], 'NineNOP': t09['nop'],
         'NineLU': t09['lu'], 'NineBR': t09['br'], 'NineFlush': 2 * t09['br'],
         'NineCPI': f"{t09['pl'] / t09['n']:.2f}",
+        'MaxProg': r'\file{' + top['name'].replace('_', r'\_') + '}', 'MaxN': top['n'], 'MaxBR': top['br'],
+        'MaxFlush': 2 * top['br'], 'MaxLU': top['lu'], 'MaxCPI': f"{top['pl'] / top['n']:.2f}",
         'DemoN': demo['n'], 'DemoPL': demo['pl'], 'DemoNH': demo['nh'], 'DemoNOP': demo['nop'],
         'DemoLU': demo['lu'], 'DemoBR': demo['br'],
         'TSingle': ts, 'TPipe': tp, 'IdealSpeedup': f'{ts / tp:.2f}',

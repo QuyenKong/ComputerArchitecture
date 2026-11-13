@@ -5,19 +5,19 @@
 \contentsline {table}{\numberline {2.2}{\ignorespaces Các quyết định thiết kế}}{4}{table.caption.9}%
 \contentsline {table}{\numberline {2.3}{\ignorespaces Bản đồ bộ nhớ}}{4}{table.caption.10}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Mã hóa \texttt {ALUCtrl}}}{5}{table.caption.11}%
-\contentsline {table}{\numberline {3.2}{\ignorespaces Tín hiệu điều khiển theo nhóm lệnh}}{7}{table.caption.13}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Các circuit con của hai CPU}}{5}{table.caption.11}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Mã hóa \texttt {ALUCtrl}}}{5}{table.caption.12}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Tín hiệu điều khiển theo nhóm lệnh}}{7}{table.caption.14}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {5.1}{\ignorespaces Các trường của thanh ghi pipeline}}{12}{table.caption.17}%
-\contentsline {table}{\numberline {5.2}{\ignorespaces Giản đồ pipeline của 7 lệnh trong \texttt {t06\_hazard.s}}}{14}{table.caption.18}%
+\contentsline {table}{\numberline {5.1}{\ignorespaces Các trường của thanh ghi pipeline}}{12}{table.caption.18}%
+\contentsline {table}{\numberline {5.2}{\ignorespaces Giản đồ pipeline của 7 lệnh trong \texttt {t06\_hazard.s}}}{15}{table.caption.19}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {6.1}{\ignorespaces Kết quả test vector (đạt / tổng số); ba khối cuối chỉ có ở PL}}{16}{table.caption.19}%
-\contentsline {table}{\numberline {6.2}{\ignorespaces Kết quả chạy \texttt {run\_tests.py}}}{16}{table.caption.20}%
+\contentsline {table}{\numberline {6.1}{\ignorespaces Kết quả test vector (đạt / tổng số); ba khối cuối chỉ có ở PL}}{17}{table.caption.20}%
+\contentsline {table}{\numberline {6.2}{\ignorespaces Kết quả chạy \texttt {run\_tests.py}}}{17}{table.caption.21}%
+\contentsline {table}{\numberline {6.3}{\ignorespaces Số lệnh và số chu kỳ trên SC, NH và PL}}{18}{table.caption.22}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {7.1}{\ignorespaces Số lệnh và số chu kỳ trên SC, NH và PL}}{18}{table.caption.21}%
-\addvspace {10\p@ }
-\contentsline {table}{\numberline {8.1}{\ignorespaces Hướng phát triển và cách đo lợi ích}}{20}{table.caption.23}%
+\contentsline {table}{\numberline {7.1}{\ignorespaces Hướng phát triển và cách đo lợi ích}}{20}{table.caption.24}%
 \addvspace {10\p@ }
 \contentsfinish 
 \contentsfinish 

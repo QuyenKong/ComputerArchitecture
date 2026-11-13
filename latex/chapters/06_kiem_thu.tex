@@ -9,7 +9,7 @@ Kiểm thử chia hai mức: test vector cho từng module và chương trình c
 Assembler \file{tools/rvasm.py} dịch toàn bộ RV32I, các lệnh giả thông dụng (\texttt{li}, \texttt{la},
 \texttt{call}, \texttt{ret}, \ldots) và các directive \texttt{.text}, \texttt{.data}, \texttt{.word}, \texttt{.asciz},
 \ldots{} Đầu ra là \file{.text.hex} và \file{.data.hex} để nạp ROM, RAM bằng \emph{Load Image}, kèm file \file{.lst}.
-Tùy chọn \texttt{--circ} ghi thẳng mã máy vào ROM \sig{IMEM} trong file \file{.circ}; \texttt{--nohazard} chèn
+Tùy chọn \texttt{-{}-circ} ghi thẳng mã máy vào ROM \sig{IMEM} trong file \file{.circ}; \texttt{-{}-nohazard} chèn
 \texttt{nop} cho bản NH (mục~\ref{sec:nh}). Lệnh giả \texttt{li} với hằng 32 bit tách thành \texttt{lui} và
 \texttt{addi}; vì \texttt{addi} mở rộng dấu, khi bit 11 của phần thấp bằng 1 thì phần cao phải cộng thêm 1, và
 \file{t02\_upper.s} kiểm tra trường hợp hằng \texttt{0x800}.
@@ -70,7 +70,7 @@ tra UART và GPIO.
 Ngoài ra \file{tools/fuzz.py} sinh 25 chương trình ngẫu nhiên (seed 0 đến 24, mỗi chương trình 189 đến 231 lệnh)
 với nhiều phụ thuộc gần nhau để kích hoạt forwarding và stall.
 
-\section{Kết quả}\label{sec:testres}
+\section{Kết quả kiểm thử}\label{sec:testres}
 
 \begin{table}[H]
 \centering\small
@@ -82,7 +82,7 @@ File mạch & Chế độ assemble & 12 chương trình & 25 chương trình fuz
 SC & bình thường & 12/12 PASS & 25/25 PASS \\
 PL & bình thường & 12/12 PASS & 25/25 PASS \\
 NH & bình thường & 0/12 PASS & không chạy \\
-NH & \texttt{--nohazard} & 12/12 PASS & 25/25 PASS \\
+NH & \texttt{-{}-nohazard} & 12/12 PASS & 25/25 PASS \\
 \bottomrule
 \end{tabular}
 \end{table}

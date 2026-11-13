@@ -138,6 +138,11 @@
 
 % Ảnh mạch chụp từ Logisim nằm ở docs/img; bảng và biểu đồ sinh tự động nằm ở generated/
 \graphicspath{{../docs/img/}{generated/}{../../docs/img/}{../generated/}}
+% Trang chỉ chứa float: đặt float sát đầu trang thay vì canh giữa theo chiều dọc
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{12pt}
+\makeatother
 
 \counterwithin{figure}{chapter} % Đánh số hình ảnh kèm theo chapter. Ví dụ: Hình 1.1, 1.2,..
 
@@ -242,12 +247,9 @@
 \label{ch:pipe}
 \subfile{chapters/05_pipeline}
 
-\chapter{KIỂM THỬ}
+\chapter{KIỂM THỬ VÀ ĐÁNH GIÁ KẾT QUẢ}
 \label{ch:test}
 \subfile{chapters/06_kiem_thu}
-
-\chapter{KẾT QUẢ VÀ ĐÁNH GIÁ}
-\label{ch:result}
 \subfile{chapters/07_ket_qua}
 
 \chapter{PHẦN MỞ RỘNG, HẠN CHẾ VÀ HƯỚNG PHÁT TRIỂN}

@@ -1,15 +1,14 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Circuit \texttt {ALU}: mười phép toán tính song song, MUX chọn theo funct3}}{5}{figure.caption.12}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Circuit \texttt {StoreUnit}: ghép byte hoặc halfword mới vào word cũ}}{8}{figure.caption.14}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Datapath của circuit \texttt {ALU} (\texttt {op} = \texttt {ALUCtrl[2:0]}, \texttt {alt} = \texttt {ALUCtrl[3]}; chân vào và bộ tách \texttt {ALUCtrl} ở mép trái mạch không đưa vào hình)}}{6}{figure.caption.13}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Circuit \texttt {StoreUnit}: ghép byte hoặc halfword mới vào word cũ}}{8}{figure.caption.15}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Mạch top-level của CPU đơn chu kỳ trong Logisim}}{9}{figure.caption.15}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Mạch top-level của CPU đơn chu kỳ trong Logisim}}{9}{figure.caption.16}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {5.1}{\ignorespaces Mạch top-level của CPU pipeline. Pipeline Monitor ở góc dưới hiển thị PC và lệnh ở từng tầng cùng các tín hiệu \texttt {Stall}, \texttt {LoadUse}, \texttt {E\_Redirect}, \texttt {FwdA}, \texttt {FwdB}}}{11}{figure.caption.16}%
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Mạch top-level của CPU pipeline. Pipeline Monitor ở góc dưới hiển thị PC và lệnh ở từng tầng cùng các tín hiệu \texttt {Stall}, \texttt {LoadUse}, \texttt {E\_Redirect}, \texttt {FwdA}, \texttt {FwdB}}}{11}{figure.caption.17}%
 \addvspace {10\p@ }
-\addvspace {10\p@ }
-\contentsline {figure}{\numberline {7.1}{\ignorespaces Tăng tốc so với SC theo giả định trễ; đường đứt nét là mức lý tưởng khi CPI = 1}}{19}{figure.caption.22}%
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Tăng tốc so với SC theo giả định trễ; đường đứt nét là mức lý tưởng khi CPI = 1}}{19}{figure.caption.23}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \contentsfinish 

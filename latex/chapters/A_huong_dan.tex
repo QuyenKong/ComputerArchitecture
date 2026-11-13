@@ -34,7 +34,7 @@ python tools/rvasm.py programs/t08_sort.s -o build/t08_sort \
     --circ circ/RV32I_Pipeline.circ --circ-out build/sort_pipeline.circ
 \end{lstlisting}
 
-Với bản NH, thêm \texttt{--nohazard} để assembler chèn \texttt{nop}.
+Với bản NH, thêm \texttt{-{}-nohazard} để assembler chèn \texttt{nop}.
 
 \section{Chạy test}
 
@@ -71,8 +71,8 @@ model. Lệnh thứ hai biên dịch báo cáo (pdfLaTeX và biber).
         bubble \texttt{00000000} ở EX. Chạy tới một lần rẽ nhánh nhảy: \sig{E\_Redirect} = 1 và hai lệnh phía sau
         thành \texttt{00000000}.
   \item Chạy \file{run\_tests.py} trên terminal, cho thấy \texttt{ALL PASSED} với SC và PL.
-  \item Chạy \file{run\_tests.py} trên bản NH không có \texttt{--nohazard} để thấy FAIL, rồi chạy lại với
-        \texttt{--nohazard} để thấy PASS.
+  \item Chạy \file{run\_tests.py} trên bản NH không có \texttt{-{}-nohazard} để thấy FAIL, rồi chạy lại với
+        \texttt{-{}-nohazard} để thấy PASS.
 \end{enumerate}
 
 \end{document}

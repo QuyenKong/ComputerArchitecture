@@ -3,56 +3,48 @@
 
 \section{Số chu kỳ của ba phiên bản}
 
-Bảng~\ref{tab:cycles} là số chu kỳ của 12 chương trình trên ba phiên bản. Số liệu lấy từ golden model, không tính
-đoạn dump 32 thanh ghi mà \file{run\_tests.py} chèn thêm. Mục~\ref{sec:testres} đã kiểm tra mô hình này khớp từng
-chu kỳ với Logisim trên cả ba file mạch. Cột ``NOP'' là số lệnh \texttt{nop} do assembler chèn mà bản NH thực sự
-thực thi; cột ``Load-use'' và ``Nhảy'' là số lần stall và số lần rẽ nhánh hoặc nhảy được thực hiện trên PL.
+Bảng~\ref{tab:cycles} lấy từ golden model, đã được kiểm tra khớp từng chu kỳ với Logisim ở mục~\ref{sec:testres},
+không tính đoạn 31 lệnh \texttt{sw} mà \file{run\_tests.py} chèn thêm. Cột ``NOP'' là số lệnh \texttt{nop} bản NH
+thực sự thực thi; cột ``Load-use'' và ``Nhảy'' là số lần stall và số lần rẽ nhánh hoặc nhảy được thực hiện trên PL.
 
-\begin{table}[H]
+\begin{table}[!htb]
 \centering\small
 \caption{Số lệnh và số chu kỳ trên SC, NH và PL}\label{tab:cycles}
 \setlength{\tabcolsep}{4.5pt}
 \input{generated/cycles_table.tex}
 \end{table}
 
-Trên SC, CPI luôn bằng 1. Trên PL, CPI của cả 12 chương trình là \resTotCPI, cao nhất ở
-\file{t09\_recursion.s} với \resNineCPI. Bản NH có CPI tính trên số lệnh gốc là \resTotCPINH: tổng cộng nó thực thi
-\resTotNOP{} lệnh \texttt{nop}, trong khi PL chỉ stall \resTotLU{} chu kỳ cho load-use.
+Trên SC, CPI luôn bằng 1. Trên PL, CPI tính trên cả 12 chương trình là \resTotCPI. CPI cao nhất là \resMaxCPI{}
+ở \resMaxProg: chương trình chỉ có \resMaxN{} lệnh nhưng nhảy \resMaxBR{} lần, nên \resMaxFlush{} chu kỳ flush
+và 4 chu kỳ lấp đầy pipeline chiếm tỉ lệ lớn. \file{t09\_recursion.s}, chương trình dài nhất, có CPI
+\resNineCPI. Bản NH có CPI tính trên số lệnh gốc là \resTotCPINH: nó thực thi \resTotNOP{} lệnh \texttt{nop},
+trong khi PL chỉ stall \resTotLU{} chu kỳ cho load-use.
 
-Số chu kỳ thêm của PL so với số lệnh đến từ hai nguồn có thể đếm chính xác. Mỗi lần nhảy mất 2 chu kỳ
-flush, mỗi lần load-use mất 1 chu kỳ stall, cộng 4 chu kỳ lấp đầy pipeline. Trên \file{t09\_recursion.s}, \resNineBR{}
-lần nhảy tốn \resNineFlush{} chu kỳ, gấp hơn 5 lần \resNineLU{} chu kỳ của load-use. Chương trình đệ quy có nhiều
-lệnh gọi, trả về và rẽ nhánh, nên control hazard là nguồn mất mát lớn nhất. Ở NH, mọi phụ thuộc gần đều phải chờ
-bằng \texttt{nop}, kể cả phụ thuộc ALU sang ALU mà PL forward được không mất chu kỳ nào.
+Chu kỳ thêm của PL so với số lệnh gồm 2 chu kỳ flush cho mỗi lần nhảy, 1 chu kỳ stall cho mỗi lần load-use và 4
+chu kỳ lấp đầy pipeline. Trên \file{t09\_recursion.s}, \resNineBR{} lần nhảy tốn \resNineFlush{} chu kỳ, gấp hơn 5
+lần \resNineLU{} chu kỳ của load-use: chương trình đệ quy có nhiều lệnh gọi, trả về và rẽ nhánh, nên control hazard
+là nguồn mất mát lớn nhất. Ở NH, mọi phụ thuộc gần đều phải chờ bằng \texttt{nop}, kể cả phụ thuộc ALU sang ALU mà
+PL forward được không mất chu kỳ nào. Với \file{demo.s} nạp sẵn trong ROM, cả ba bản kết thúc với TTY in
+\texttt{Hello RISC-V!}, \texttt{a0} = \texttt{0xE8}, LED 7 đoạn hiện \texttt{00E8} và 8 LED sáng.
 
 \section{Thời gian thực thi theo giả định trễ}
 
-Số chu kỳ chưa đủ để so sánh, vì chu kỳ clock của ba bản khác nhau. Logisim không mô phỏng trễ cổng, nên hình~\ref{fig:speedup}
-dùng giả định trễ đã nêu ở mục~\ref{sec:critical}: \resTSingle~ps cho SC và \resTPipe~ps cho NH và
-PL. Thời gian bằng số chu kỳ nhân chu kỳ clock. Các con số này là ước tính theo giả định, không phải số đo.
+Chu kỳ clock của ba bản khác nhau, nên hình~\ref{fig:speedup} quy số chu kỳ ra thời gian theo giả định trễ ở
+mục~\ref{sec:critical}: \resTSingle~ps cho SC, \resTPipe~ps cho NH và PL. Đây là ước tính theo giả định, không
+phải số đo, vì Logisim không mô phỏng trễ cổng.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
-\includegraphics[width=0.85\textwidth]{speedup.pdf}
+\includegraphics[width=0.78\textwidth]{speedup.pdf}
 \caption{Tăng tốc so với SC theo giả định trễ; đường đứt nét là mức lý tưởng khi CPI = 1}\label{fig:speedup}
 \end{figure}
 
 Tính trên tổng 12 chương trình, PL nhanh hơn SC \resSpeedPL{} lần và NH nhanh hơn SC \resSpeedNH{} lần, so với mức
 lý tưởng \resIdealSpeedup{} lần. PL thực thi ít chu kỳ hơn NH \resSpeedPLNH{} lần với cùng chu kỳ clock; đây là
-phần đóng góp riêng của \sig{ForwardUnit} và load-use stall bằng phần cứng.
-
-Khoảng cách giữa \resSpeedPL{} và \resIdealSpeedup{} có hai nguyên nhân. Thứ nhất, CPI của PL lớn hơn 1 vì flush và
-stall như đã phân tích. Thứ hai, năm tầng không dài bằng nhau: tầng ID và WB chỉ cần 100~ps nhưng vẫn chiếm trọn
-\resTPipe~ps. Giả thuyết cần kiểm chứng là đưa quyết định rẽ nhánh lên ID hoặc thêm dự đoán nhánh sẽ thu hẹp khoảng
-cách này nhiều nhất trên các chương trình có nhiều lần nhảy như \file{t09\_recursion.s}; mục~\ref{sec:future} ước
-lượng phần lợi đó.
-
-\section{Một lần chạy cụ thể}
-
-Chương trình \file{demo.s} nạp sẵn trong ROM của cả ba file mạch có \resDemoN{} lệnh. Trên SC nó chạy
-\resDemoN{} chu kỳ. Trên PL nó chạy \resDemoPL{} chu kỳ, gồm \resDemoLU{} chu kỳ stall và \resDemoBR{} lần nhảy.
-Trên NH, sau khi assembler chèn \texttt{nop}, nó chạy \resDemoNH{} chu kỳ, trong đó \resDemoNOP{} chu kỳ là
-\texttt{nop}. Cả ba bản kết thúc với TTY in \texttt{Hello RISC-V!}, thanh ghi \texttt{a0} = \texttt{0xE8}, LED 7
-đoạn hiện \texttt{00E8} và 8 LED sáng.
+phần đóng góp riêng của \sig{ForwardUnit} và load-use stall bằng phần cứng. Khoảng cách tới mức lý tưởng có hai
+nguyên nhân: CPI của PL lớn hơn 1 vì flush và stall, và năm tầng không dài bằng nhau (ID, WB chỉ cần 100~ps nhưng
+vẫn chiếm trọn \resTPipe~ps). Đưa quyết định rẽ nhánh lên ID hoặc thêm dự đoán nhánh nhiều khả năng thu hẹp khoảng
+cách này nhất trên các chương trình nhảy nhiều như \file{t09\_recursion.s}; mục~\ref{sec:future} ước lượng phần
+lợi đó.
 
 \end{document}

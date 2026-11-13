@@ -1,11 +1,35 @@
 \documentclass[../report.tex]{subfiles}
 \begin{document}
 
-Mỗi module là một circuit con trong file \file{.circ}, có tên chân cố định và một file test vector cùng tên trong
-\file{tests/vectors/}. Mục này mô tả giao diện, cấu tạo và lý do chọn cách làm của từng module. Ảnh chụp lấy
-trực tiếp từ Logisim.
+Mỗi module là một circuit con trong file \file{.circ}, có tên chân cố định. Mạch SC có 11 circuit con; mạch PL
+dùng lại cả 11 và thêm 7 circuit riêng: bốn thanh ghi pipeline và ba khối xử lý hazard (bảng~\ref{tab:modules}).
+Chương này mô tả 11 circuit dùng chung; 7 circuit riêng của PL được mô tả ở chương~\ref{ch:pipe}, cạnh cơ chế
+mà chúng phục vụ. \sig{PerfCounters} và bốn thanh ghi pipeline không có test vector riêng, chúng được kiểm tra qua
+các chương trình chạy trên toàn CPU (mục~\ref{sec:vec}). Ảnh chụp lấy trực tiếp từ Logisim.
 
-\section{ALU và ALUControl}
+\begin{table}[!htb]
+\centering\footnotesize
+\caption{Các circuit con của hai CPU}\label{tab:modules}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Circuit con & Có ở & Mô tả ở mục & Test vector riêng \\
+\midrule
+\sig{ALU}, \sig{ALUControl} & SC, PL & \ref{sec:alu} & có \\
+\sig{RegisterFile} & SC, PL & \ref{sec:regfile} & có \\
+\sig{ImmGen} & SC, PL & \ref{sec:immgen} & có \\
+\sig{Control} & SC, PL & \ref{sec:control} & có \\
+\sig{BranchUnit} & SC, PL & \ref{sec:branch} & có \\
+\sig{LoadUnit}, \sig{StoreUnit}, \sig{AddrDecode} & SC, PL & \ref{sec:mem} & có \\
+\sig{IOController} & SC, PL & \ref{sec:io} & có \\
+\sig{PerfCounters} & SC, PL & \ref{sec:perf} & không \\
+\sig{IF\_ID}, \sig{ID\_EX}, \sig{EX\_MEM}, \sig{MEM\_WB} & PL & \ref{sec:pregs} & không \\
+\sig{ForwardUnit}, \sig{IDBypass} & PL & \ref{sec:fwd} & có \\
+\sig{HazardUnit} & PL & \ref{sec:loaduse}, \ref{sec:hzeq} & có \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{ALU và ALUControl}\label{sec:alu}
 
 \sig{ALU} nhận hai toán hạng \sig{A}, \sig{B} 32 bit và mã \sig{ALUCtrl} 4 bit, cho ra \sig{Y} 32 bit. Mười phép
 toán được tính song song bằng Adder, Subtractor, hai Comparator (một có dấu, một không dấu), ba cổng logic 32 bit
@@ -31,37 +55,42 @@ Với lệnh I, bit 30 thuộc immediate: lệnh \texttt{addi x1, x1, -1024} có
 \sig{ALUCtrl} chỉ lấy bit 30 khi lệnh là R, hoặc khi lệnh là I với funct3 = 101 (SRAI). Thiếu điều kiện này thì
 ADDI với immediate âm bị tính thành phép trừ; \file{t01\_alu.s} có trường hợp kiểm tra lỗi đó.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
-\includegraphics[width=0.6\textwidth]{ALU.png}
-\caption{Circuit \sig{ALU}: mười phép toán tính song song, MUX chọn theo funct3}\label{fig:alu}
+\includegraphics[width=0.70\textwidth]{ALU_hr.png}
+\caption{Datapath của circuit \sig{ALU} (\sig{op} = \sig{ALUCtrl[2:0]}, \sig{alt} = \sig{ALUCtrl[3]}; chân vào và
+bộ tách \sig{ALUCtrl} ở mép trái mạch không đưa vào hình)}\label{fig:alu}
 \end{figure}
 
-\section{RegisterFile}
+\section{RegisterFile}\label{sec:regfile}
 
 \sig{RegisterFile} có 31 thanh ghi 32 bit (x1 đến x31), hai cổng đọc tổ hợp \sig{RA1}/\sig{RD1},
 \sig{RA2}/\sig{RD2} và một cổng ghi đồng bộ \sig{WA}, \sig{WD}, \sig{WE}. Mỗi cổng đọc là một MUX 32:1 có đầu vào
 0 nối hằng 0, nên x0 không phải một thanh ghi thật. Cổng ghi dùng Decoder 5$\to$32 với enable bằng \sig{WE}; đầu ra
-thứ $k$ nối vào chân enable của thanh ghi x$k$, nên ở cạnh lên chỉ thanh ghi được chọn chụp giá trị. Khối còn hiển
-thị giá trị 32 thanh ghi ngay trên hình hộp để quan sát khi demo.
+thứ $k$ nối vào chân enable của thanh ghi x$k$, nên ở cạnh lên chỉ thanh ghi được chọn chụp giá trị.
 
-Module không tự bypass giá trị đang ghi sang cổng đọc. Trong CPU đơn chu kỳ, lệnh \texttt{addi x1, x1, 1} có
-rd = rs1; nếu có bypass bên trong thì đường ALU $\to$ \sig{WD} $\to$ \sig{RD1} $\to$ ALU thành vòng tổ hợp và mạch
-dao động. Pipeline cần bypass thì dùng khối \sig{IDBypass} đặt bên ngoài (mục~\ref{sec:fwd}).
+Module không tự bypass giá trị đang ghi sang cổng đọc: với \texttt{addi x1, x1, 1} trên CPU đơn chu kỳ, đường
+ALU $\to$ \sig{WD} $\to$ \sig{RD1} $\to$ ALU sẽ thành vòng tổ hợp và mạch dao động. Pipeline dùng khối
+\sig{IDBypass} đặt bên ngoài (mục~\ref{sec:fwd}).
 
-\section{ImmGen}
+\section{ImmGen}\label{sec:immgen}
 
 \sig{ImmGen} tách lệnh thành 8 mảnh bit có vị trí cố định, ghép lại theo từng định dạng I, S, B, U, J, mở rộng dấu
 lên 32 bit rồi chọn bằng MUX theo \sig{ImmSel} (0 = I, 1 = S, 2 = B, 3 = U, 4 = J). Do các mảnh immediate nằm cùng
 chỗ giữa các định dạng (imm[10:5] luôn ở bit [30:25], imm[4:1] của S và B luôn ở bit [11:8]), khối này chủ yếu là
-Splitter, Bit Extender và một MUX. Bit 0 của offset B và J luôn bằng 0 vì lệnh dài 4 byte.
+Splitter, Bit Extender và một MUX.
 
-\section{Control}
+Offset của B và J là bội của 2 nên đặc tả không mã hóa bit 0; \sig{ImmGen} nối hằng 0 vào vị trí này. Bit 1 vẫn
+được mã hóa vì đặc tả chọn đơn vị 2 byte để dùng chung với phần mở rộng C, có lệnh nén dài 2 byte
+\cite{riscv-spec}. Với RV32I, đích nhảy có bit 1 bằng 1 là lệch địa chỉ lệnh; mạch không phát hiện vì
+\sig{IMEM} chỉ dùng \sig{PC[11:2]} (mục~\ref{sec:limits}).
+
+\section{Control}\label{sec:control}
 
 \sig{Control} nhận lệnh 32 bit và sinh mọi tín hiệu điều khiển. Tín hiệu \sig{valid} = \sig{opcode[1]} AND
 \sig{opcode[0]} làm enable cho Decoder 5$\to$32 chọn theo \sig{opcode[6:2]}. Mười đầu ra được dùng tương ứng mười nhóm
 lệnh; mỗi tín hiệu điều khiển là OR của các nhóm cần nó, ví dụ \sig{RegWrite} = OP $\lor$ OP-IMM $\lor$ LOAD
-$\lor$ JAL $\lor$ JALR $\lor$ LUI $\lor$ AUIPC. Bảng~\ref{tab:ctrl} là bảng chân lý hiện thực trong mạch.
+$\lor$ JAL $\lor$ JALR $\lor$ LUI $\lor$ AUIPC (bảng~\ref{tab:ctrl}).
 
 \begin{table}[H]
 \centering\small
@@ -96,14 +125,14 @@ Ngoài các tín hiệu trên, \sig{Control} sinh \sig{UseRs1} và \sig{UseRs2} 
 không. Pipeline dùng hai tín hiệu này để không stall khi trường rs1 của LUI hoặc JAL tình cờ trùng rd của một lệnh
 load.
 
-\section{BranchUnit}
+\section{BranchUnit}\label{sec:branch}
 
 \sig{BranchUnit} so sánh hai toán hạng bằng một Comparator không dấu (cho phép bằng và nhỏ hơn không dấu) và một
 Comparator có dấu. MUX 4:1 chọn theo \sig{funct3[2:1]}: 00 là bằng, 10 là nhỏ hơn có dấu, 11 là nhỏ hơn không
 dấu. Kết quả XOR với \sig{funct3[0]}, vì RISC-V mã hóa BNE, BGE, BGEU là phủ định của BEQ, BLT, BLTU, rồi AND với
 \sig{Branch} để ra \sig{Taken}.
 
-\section{LoadUnit, StoreUnit và AddrDecode}
+\section{LoadUnit, StoreUnit và AddrDecode}\label{sec:mem}
 
 \sig{AddrDecode} tách địa chỉ thành \sig{WordAddr} = \sig{Addr[13:2]}, \sig{Off} = \sig{Addr[1:0]} và
 \sig{IsIO} = (\sig{Addr[31:28]} = \texttt{0xF}). \sig{RamWE} = \sig{MemWrite} AND NOT \sig{IsIO}, \sig{IoWE} =
@@ -118,31 +147,28 @@ $\mathit{New} = (\mathit{Old} \land \lnot M) \lor ((\mathit{WData} \ll \mathit{O
 Ví dụ \texttt{sb} byte \texttt{0xAB} vào offset 2 của word \texttt{0x11223344} cho $M$ = \texttt{0x00FF0000} và
 word mới \texttt{0x11AB3344}.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
-\includegraphics[width=0.62\textwidth]{StoreUnit.png}
+\includegraphics[width=\textwidth]{StoreUnit_hr.png}
 \caption{Circuit \sig{StoreUnit}: ghép byte hoặc halfword mới vào word cũ}\label{fig:store}
 \end{figure}
 
-\section{IOController}
+\section{IOController}\label{sec:io}
 
 \sig{IOController} hiện thực UART và GPIO theo kiểu memory-mapped (bảng~\ref{tab:memmap}). \sig{Addr[4:2]} qua
 Decoder 3$\to$8 (enable = \sig{IsIO}) chọn thanh ghi I/O. Khi ghi, \sig{TxWE} = \sig{MemWrite} AND chọn 0 đẩy
 ký tự \sig{WData[6:0]} ra TTY; thanh ghi \sig{GPIO\_OUT} 32 bit có enable = \sig{MemWrite} AND chọn 4. Khi đọc,
 MUX 8:1 trả về ký tự từ Keyboard, thanh ghi trạng thái, \sig{GPIO\_OUT} hoặc 8 công tắc DIP. Ở mức CPU, MUX
-\sig{IsIO} ? \sig{IoRData} : RAM đưa dữ liệu vào \sig{LoadUnit}, nên \texttt{lbu} hay \texttt{lh} trên thanh ghi I/O
-vẫn đúng.
+\sig{IsIO} ? \sig{IoRData} : RAM đưa dữ liệu vào \sig{LoadUnit}, nên \texttt{lbu}, \texttt{lh} trên thanh ghi I/O vẫn đúng.
 
-Đọc \texttt{UART\_RXDATA} lấy ký tự ra khỏi hàng đợi Keyboard. Tín hiệu \sig{KbdRE} vì thế phải AND với
-\sig{MemRead}; nếu không, một lệnh \texttt{add} tình cờ có kết quả \texttt{0xF0000004} cũng làm mất ký tự. Trong
-pipeline, việc đọc chỉ xảy ra ở tầng MEM, nơi lệnh chắc chắn đã qua điểm flush, nên thanh ghi EX/MEM phải mang theo
-trường \sig{MemRead}. UART dùng hỏi vòng (polling) thanh ghi trạng thái, không có ngắt.
+Đọc \texttt{UART\_RXDATA} lấy ký tự ra khỏi hàng đợi Keyboard, nên \sig{KbdRE} phải AND với \sig{MemRead}; nếu
+không, một lệnh \texttt{add} tình cờ có kết quả \texttt{0xF0000004} cũng làm mất ký tự. Trong pipeline, việc đọc
+chỉ xảy ra ở tầng MEM, sau điểm flush, nên EX/MEM mang theo trường \sig{MemRead}.
 
-\section{PerfCounters}
+\section{PerfCounters}\label{sec:perf}
 
 \sig{PerfCounters} có hai bộ đếm 32 bit. \sig{cycles} tăng ở mỗi cạnh lên khi CPU đang chạy (\sig{Run} = 1, tức
 chưa halt). \sig{instret} tăng khi có lệnh hoàn thành (\sig{Retire} = 1): ở SC là mỗi chu kỳ, ở PL là khi lệnh ở
-tầng WB có \sig{valid} = 1, nên bubble không được đếm. Hai giá trị được đưa ra chân \sig{cycles}, \sig{instret} để
-bộ test đọc và tính CPI.
+tầng WB có \sig{valid} = 1, nên bubble không được đếm. Bộ test đọc hai chân này để tính CPI.
 
 \end{document}

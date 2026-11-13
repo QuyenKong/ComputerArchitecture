@@ -1,10 +1,11 @@
 \documentclass[../report.tex]{subfiles}
 \begin{document}
 
-\section{Trạng thái kiến trúc và định dạng lệnh}
+\section{Trạng thái kiến trúc và định dạng lệnh}\label{sec:isa}
 
 RV32I có 32 thanh ghi x0 đến x31, mỗi thanh ghi 32 bit, trong đó x0 luôn đọc ra 0 và mọi lệnh ghi vào x0 bị bỏ
-qua \cite{riscv-spec}. Bộ nhớ đánh địa chỉ theo byte, kiểu little-endian. Mỗi lệnh dài 4 byte nên PC tăng 4 sau
+qua \cite{riscv-spec}. Vì x0 là hằng 0, phần cứng chỉ cần 31 thanh ghi thật x1 đến x31
+(mục~\ref{sec:regfile}). Bộ nhớ đánh địa chỉ theo byte, kiểu little-endian. Mỗi lệnh dài 4 byte nên PC tăng 4 sau
 mỗi lệnh. ROM và RAM của Logisim lưu mỗi ô một word, nên chỉ số ô bằng địa chỉ byte bỏ 2 bit thấp: \sig{IMEM}
 dùng \sig{PC[11:2]}, \sig{DMEM} dùng \sig{Addr[13:2]}.
 
@@ -29,8 +30,12 @@ J & \multicolumn{4}{l}{imm[20|10:1|11|19:12]} & rd & opcode \\
 \end{tabular}
 \end{table}
 
-Hai CPU hỗ trợ toàn bộ RV32I base trừ FENCE và các lệnh CSR: 10 lệnh R, 9 lệnh I số học, 5 lệnh load, 3 lệnh
-store, 6 lệnh rẽ nhánh có điều kiện, JAL, JALR, LUI và AUIPC. ECALL và EBREAK được quy ước là lệnh dừng CPU, để
+Hai CPU hiện thực 37 lệnh RV32I: 10 lệnh R, 9 lệnh I số học, 5 lệnh load, 3 lệnh store, 6 lệnh rẽ nhánh có
+điều kiện, JAL, JALR, LUI và AUIPC. FENCE được giải mã thành NOP: \sig{Control} không có nhóm cho opcode
+\texttt{0001111}, nên mọi tín hiệu điều khiển bằng 0. Cách này đúng với hai CPU ở đây vì chúng chỉ có một luồng
+thực thi, không có cache, và mọi truy cập RAM hay I/O diễn ra lần lượt theo đúng thứ tự chương trình, nên FENCE
+không còn thứ tự nào cần ép thêm. Các lệnh CSR thuộc phần mở rộng Zicsr, không nằm trong RV32I base, và không được
+hiện thực. ECALL và EBREAK được quy ước là lệnh dừng CPU, để
 bộ test có điểm kết thúc rõ ràng.
 
 \section{Sơ đồ khối và các quyết định thiết kế}
@@ -67,7 +72,7 @@ Vùng & Địa chỉ & Ghi chú \\
 \midrule
 \sig{IMEM} (ROM) & \texttt{0x0000\_0000}--\texttt{0x0000\_0FFF} & 1024 lệnh, địa chỉ ô = \sig{PC[11:2]} \\
 \sig{DMEM} (RAM) & \texttt{0x0000\_0000}--\texttt{0x0000\_3FFF} & 16 KiB, địa chỉ ô = \sig{Addr[13:2]} \\
-Vùng dump của bộ test & \texttt{0x0000\_0700}--\texttt{0x0000\_077F} & \file{run\_tests.py} lưu x0..x31 vào đây trước khi dừng \\
+Vùng dump của bộ test & \texttt{0x0000\_0700}--\texttt{0x0000\_077F} & \file{run\_tests.py} lưu x1 đến x31 vào \texttt{0x704}--\texttt{0x77C} trước khi dừng; ô \texttt{0x700} ứng với x0 để trống \\
 UART\_TXDATA & \texttt{0xF000\_0000} (ghi) & ký tự ra TTY \\
 UART\_RXDATA & \texttt{0xF000\_0004} (đọc) & lấy một ký tự từ Keyboard \\
 UART\_STATUS & \texttt{0xF000\_0008} (đọc) & bit 0: có ký tự chờ đọc; bit 1: TX sẵn sàng \\

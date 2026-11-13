@@ -6,12 +6,13 @@
 Ngoài yêu cầu cơ bản, nhóm làm thêm các lệnh tùy chọn, UART và GPIO, forwarding hai nguồn cùng bypass WB$\to$ID,
 bộ đếm \sig{cycles}, \sig{instret}, Pipeline Monitor, toolchain kiểm thử tự động và bản NH (bảng~\ref{tab:req}).
 
-\section{Hạn chế}
+\section{Hạn chế}\label{sec:limits}
 
 \begin{itemize}
   \item Truy cập bộ nhớ lệch (ví dụ \texttt{lw} ở địa chỉ không chia hết cho 4) không được hỗ trợ, kết quả không xác định.
-  \item Không có exception, ngắt và CSR. ECALL, EBREAK được dùng làm lệnh dừng; FENCE thực thi như NOP. UART vì thế
-        phải hỏi vòng thanh ghi trạng thái.
+        Đích nhảy lệch (bit 1 bằng 1) cũng không bị phát hiện, vì \sig{IMEM} bỏ qua bit 1 của PC.
+  \item Không có exception, ngắt và CSR. ECALL, EBREAK được dùng làm lệnh dừng; FENCE được giải mã thành NOP
+        (mục~\ref{sec:isa}). UART vì thế phải hỏi vòng thanh ghi trạng thái.
   \item Vùng I/O chỉ giải mã \sig{Addr[31:28]} và \sig{Addr[4:2]}, nên mọi địa chỉ \texttt{0xFxxx\_xxxx} khác là bí
         danh của 8 thanh ghi I/O.
   \item Rẽ nhánh quyết định ở EX nên mỗi lần nhảy mất 2 chu kỳ. Trên 12 chương trình test, flush chiếm
