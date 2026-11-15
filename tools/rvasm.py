@@ -498,7 +498,7 @@ def main():
     out = a.out or re.sub(r'\.\w+$', '', a.src)
     write_hex(out + '.text.hex', words)
     write_hex(out + '.data.hex', data_words(data) or [0])
-    with open(out + '.lst', 'w') as f:
+    with open(out + '.lst', 'w', encoding='utf-8') as f:
         for pc, w, ins, ln, raw in listing:
             f.write(f'{pc:08x}:  {w:08x}   {ins:<28} # L{ln}: {raw}\n')
     print(f'{len(words)} instructions, {len(data)} data bytes -> {out}.text.hex / .data.hex / .lst')

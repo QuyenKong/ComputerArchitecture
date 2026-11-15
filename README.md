@@ -10,7 +10,7 @@ Bài tập lớn môn Kiến trúc máy tính tiên tiến: máy tính 32-bit ki
 
 So sánh 3 bản (số chu kỳ, giản đồ từng chu kỳ): `python tools/compare.py [programs/t06_hazard.s]`. Trang giải thích: `docs/SO_SANH.html`.
 
-**Video demo:** `demo/demo_RV32I.mp4` (khoảng 3 phút, phụ đề tiếng Việt): CPU đơn chu kỳ chạy `demo.s`, pipeline chạy `t06_hazard.s` (stall, forwarding, flush trên Pipeline Monitor), UART/GPIO với `t11_io.s`, và `run_tests.py` trên cả ba bản.
+**Video demo:** `demo/demo_RV32I_v2.mp4` (3 phút 49 giây, phụ đề tiếng Việt): CPU đơn chu kỳ chạy `demo.s`, pipeline chạy `t06_hazard.s` (stall, forwarding, flush trên Pipeline Monitor), UART/GPIO với `t11_io.s`, và `run_tests.py` trên cả ba bản. Bản v2 zoom vào Register File, RAM, bộ đếm, Pipeline Monitor và terminal mỗi khi cần đọc số, có con trỏ và khung đỏ chỉ vào giá trị đang nói. Bản cũ `demo/demo_RV32I.mp4` vẫn giữ.
 
 **Báo cáo kỹ thuật (LaTeX):** `latex/report.tex`, bản PDF `latex/report.pdf`. Dựng lại: `python latex/scripts/gen_results.py` rồi `cd latex && latexmk -pdf report.tex`.
 
@@ -53,7 +53,7 @@ python3 tools/rvasm.py programs/t08_sort.s -o build/t08_sort --circ circ/RV32I_P
 **Test từng module** (GUI): mở circuit con (ví dụ `ALU`) → Simulate → Test Vector → Load `tests/vectors/ALU.txt`.
 Dòng lệnh: `java -jar logisim-evolution-4.1.0-all.jar -w ALU tests/vectors/ALU.txt circ/RV32I_Pipeline.circ` (in `Passed: n, Failed: m`). Lệnh này lỗi khi cạnh file mạch có file `.RV32I_*.circ.autosave` của một phiên Logisim đang mở; khi đó đóng Logisim hoặc chạy trên bản sao của file `.circ`.
 
-**Test toàn CPU** (headless, so với golden model `tools/rvsim.py`: 32 thanh ghi + toàn bộ RAM + TTY + GPIO + số chu kỳ):
+**Test toàn CPU** (headless, so với golden model `tools/rvsim.py`: 31 thanh ghi x1–x31 + toàn bộ RAM + TTY + GPIO + số chu kỳ):
 
 ```bash
 export LOGISIM_JAR=/path/to/logisim-evolution-4.1.0-all.jar

@@ -41,8 +41,32 @@ python tools/run_tests.py circ/extra/RV32I_Pipeline_NoHazard.circ --nohazard
 python tools/compare.py [programs/t06_hazard.s]
 ```
 
+## Đọc / xuất tài liệu (pdf, pptx, docx)
+
+Đọc file pdf/pptx/docx/xlsx thì chuyển sang Markdown bằng `tools/docconv.py`, không dùng tool Read trực tiếp trên
+file nhị phân, không tự viết script python-pptx/python-docx để trích chữ. Xuất ngược từ Markdown cũng dùng script này.
+
+```bash
+python tools/docconv.py to-md slides/RV32I_ThuyetTrinh.pptx      # markitdown, có cả speaker notes
+python tools/docconv.py to-md "Yêu cầu BTL.docx" -o <scratchpad>/yc.md
+python tools/docconv.py to-md latex/report.pdf                   # pdftotext -layout (mặc định cho PDF)
+python tools/docconv.py from-md note.md -o note.docx|note.pptx|note.pdf|note.html [--reference mau.docx]
+```
+
+- PDF mặc định đi qua `pdftotext -enc UTF-8 -layout`; markitdown làm dính chữ tiếng Việt với PDF do LaTeX sinh.
+  `--engine markitdown` để ép dùng markitdown (vd. PDF có bảng đơn giản).
+- Xuất PDF dùng pandoc + xelatex, font Times New Roman.
+- File trung gian (.md trích ra, bản nháp xuất thử) để trong scratchpad, không bỏ vào repo.
+- Template `slides/template/HUST_*.pptx` không dùng được làm `--reference` của pandoc (thiếu layout chuẩn).
+  Bộ slide thuyết trình vẫn sinh bằng `slides/build_slides.py`.
+- Markitdown gọi trực tiếp (`markitdown file`) khi stdout là pipe sẽ mất dấu tiếng Việt trên Windows; script đã
+  ép `PYTHONUTF8=1`. Nếu gọi tay thì dùng `markitdown file -o out.md`.
+
+## Môi trường
+
 Cần `LOGISIM_JAR` trỏ tới `logisim-evolution-4.1.0-all.jar` (Java 21). LaTeX: TinyTeX
 (`pdflatex`/`xelatex`/`latexmk`, có `vntex`, `babel-vietnamese`, `texfot`, `chktex`, `latexdiff`).
+Chuyển tài liệu: `markitdown` (pip, Python 3.12), `pandoc` 3.13, `pdftotext` (poppler).
 
 ## Cấu trúc
 
